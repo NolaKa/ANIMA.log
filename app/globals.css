@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --terminal-green: #33FF00;
+  --terminal-amber: #FFB000;
+  --error-red: #FF3333;
+  --true-black: #000000;
+  --pure-white: #FFFFFF;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--true-black);
+  color: var(--terminal-green);
+  font-family: 'JetBrains Mono', monospace;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* CRT Scanlines Effect */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    transparent 50%,
+    rgba(51, 255, 0, 0.03) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: scanline 8s linear infinite;
+}
+
+/* Screen flicker */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.98; }
+}
+
+body {
+  animation: flicker 0.15s infinite;
+}
+
+/* Cursor blink */
+.cursor-blink::after {
+  content: '_';
+  animation: blink 1s infinite;
+}
+
+/* Glitch effect */
+.glitch {
+  position: relative;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch::before {
+  left: 2px;
+  text-shadow: -2px 0 #ff00c1;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+  left: -2px;
+  text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim-2 1s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(31px, 9999px, 94px, 0); }
+  20% { clip: rect(54px, 9999px, 66px, 0); }
+  40% { clip: rect(28px, 9999px, 84px, 0); }
+  60% { clip: rect(42px, 9999px, 68px, 0); }
+  80% { clip: rect(30px, 9999px, 88px, 0); }
+  100% { clip: rect(95px, 9999px, 98px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip: rect(65px, 9999px, 100px, 0); }
+  20% { clip: rect(41px, 9999px, 74px, 0); }
+  40% { clip: rect(78px, 9999px, 85px, 0); }
+  60% { clip: rect(42px, 9999px, 93px, 0); }
+  80% { clip: rect(15px, 9999px, 94px, 0); }
+  100% { clip: rect(60px, 9999px, 98px, 0); }
+}
+
+/* Dithering effect for images - 1-bit/2-bit conversion */
+.dithered {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: contrast(2) brightness(1.2) grayscale(100%);
+  /* Simulate 1-bit dithering with CSS */
+  image-rendering: pixelated;
+}
+
+/* Enhanced dithering with canvas-like effect */
+.dithered::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      rgba(51, 255, 0, 0.03) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(51, 255, 0, 0.03) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(51, 255, 0, 0.03) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(51, 255, 0, 0.03) 3px
+    );
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--true-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--terminal-green);
+  opacity: 0.3;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.5;
+}
+
+/* Selection */
+::selection {
+  background: var(--terminal-green);
+  color: var(--true-black);
+}
+

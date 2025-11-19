@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Entry {
+  id                String   @id @default(cuid())
+  timestamp         DateTime @default(now())
+  type              String   // "text" | "image"
+  contentText       String?  // raw text (for text entries)
+  imageUrl          String?  // image URL/path (for image entries)
+  detectedSymbols   String   // JSON array of symbols
+  dominantArchetype String?  // e.g. "Cień", "Anima", "Animus" (archetype_tag)
+  visualMood        String?  // visual mood description
+  aiAnalysis        String   // Full AI analysis JSON (ai_analysis)
+  analysisLog       String   // Short analysis log for display
+  reflectionQuestion String  // Reflection question
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([timestamp])
+  @@index([dominantArchetype])
+}
+
+model Symbol {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  archetype   String?
+  firstSeen   DateTime @default(now())
+  occurrences Int      @default(1)
+}
+
+model Constellation {
+  id          String   @id @default(cuid())
+  pattern     String   // e.g. "ZANURZENIE"
+  description String
+  symbols     String   // JSON array of related symbols
+  detectedAt  DateTime @default(now())
+  confidence  Float    // 0.0 to 1.0
+}
+

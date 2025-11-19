@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { analyzeContent } from '@/lib/anima-ai-groq'
 import { prisma } from '@/lib/prisma'
 import { normalizeSymbols, normalizeSymbol } from '@/lib/symbol-normalizer'
+import { normalizeArchetype } from '@/lib/archetype-normalizer'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,15 @@ export async function POST(request: NextRequest) {
 
     // Normalize symbols to avoid duplicates (e.g., "kot" and "koty")
     const normalizedSymbols = normalizeSymbols(analysis.detected_symbols)
+    
+    // Normalize archetype to fix typos (e.g., "KIEŃ" -> "CIEŃ")
+    // If archetype is not recognized, default to null (will be stored as null in DB)
+    let normalizedArchetype = normalizeArchetype(analysis.dominant_archetype)
+    
+    // If normalization returned null (unknown archetype), log warning but continue
+    if (!normalizedArchetype && analysis.dominant_archetype) {
+      console.warn(`Unrecognized archetype from AI: "${analysis.dominant_archetype}". Storing as null.`)
+    }
 
     // Save to database
     const entry = await prisma.entry.create({
@@ -28,7 +38,7 @@ export async function POST(request: NextRequest) {
         contentText: type === 'text' ? content : null,
         imageUrl: type === 'image' ? content : null,
         detectedSymbols: JSON.stringify(normalizedSymbols),
-        dominantArchetype: analysis.dominant_archetype,
+        dominantArchetype: normalizedArchetype,
         visualMood: analysis.visual_mood,
         aiAnalysis: JSON.stringify(analysis),
         analysisLog: analysis.analysis_log,
@@ -48,13 +58,17 @@ export async function POST(request: NextRequest) {
         },
         create: {
           name: normalizedName,
-          archetype: analysis.dominant_archetype,
+          archetype: normalizedArchetype,
           occurrences: 1,
         },
       })
     }
 
-    return NextResponse.json(analysis)
+    // Return analysis with normalized archetype
+    return NextResponse.json({
+      ...analysis,
+      dominant_archetype: normalizedArchetype || analysis.dominant_archetype,
+    })
   } catch (error) {
     console.error('Error in analyze route:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'

@@ -34,14 +34,39 @@ INSTRUKCJA ANALIZY (ALCHEMIA):
 
 3. Znajdź TENSION (Napięcie): Gdzie jest konflikt? Cień vs Persona? Męskie vs Żeńskie?
 
-4. Wygeneruj diagnozę w formacie JSON.
+4. Zidentyfikuj DOMINANT_ARCHETYPE. Użyj TYLKO jednego z poniższych archetypów:
+
+PRIMARY ARCHETYPES (używaj jako pierwsze):
+- JAŹŃ (The Self) - całość psyche, dążenie do pełni
+- CIEŃ (The Shadow) - ciemna strona osobowości, wyparte pragnienia
+- PERSONA (The Persona) - maska społeczna, rola prezentowana światu
+- ANIMA (The Anima) - nieświadoma strona kobieca w mężczyznach
+- ANIMUS (The Animus) - nieświadoma strona męska w kobietach
+
+OTHER ARCHETYPES (używaj gdy pasują lepiej):
+- HEROS (The Hero) - dążenie do udowodnienia wartości
+- OPIEKUN (The Caregiver) - dawanie innym bez wahania
+- TWÓRCA (The Creator) - marzenia i tworzenie nowych rzeczy
+- ODKRYWCA (The Explorer) - pragnienie wolności i odkryć
+- NIEWINNY (The Innocent) - otwarte serce, zaufanie
+- BŁAZEN (The Jester) - widzenie absurdu życia
+- KOCHANEK (The Lover) - życie dla połączenia i głębokich relacji
+- MAG (The Magician) - zamiana idei w rzeczywistość
+- BUNTOWNIK (The Rebel/Outlaw) - kwestionowanie wszystkiego
+- WŁADCA (The Ruler) - pragnienie stabilności i kontroli
+- MĘDRZEC (The Sage) - ciągłe poszukiwanie mądrości
+- SIEROTA (The Orphan/Everyman) - poczucie odłączenia, tęsknota za przynależnością
+
+WAŻNE: Wybierz TYLKO jeden archetyp z powyższej listy. Jeśli nie jesteś pewien, użyj jednego z PRIMARY.
+
+5. Wygeneruj diagnozę w formacie JSON.
 
 FORMAT WYJŚCIOWY (BEZWZGLĘDNIE TYLKO JSON - ŻADNEGO TEKSTU PRZED ANI PO):
 
 {
   "analysis_log": "Tekst analizy. Maks 3 zdania. Styl: Cyber-Noir. Surowy, ucięty. Np: 'Wykryto obiekt: Wilk. Symbolika instynktu nadpisanego przez cywilizację. Ego próbuje nałożyć kaganiec na naturę. Operacja nieudana.'",
   "detected_symbols": ["symbol1", "symbol2", "symbol3"],
-  "dominant_archetype": "Nazwa Archetypu (np. CIEŃ, WIELKA MATKA, TRICKSTER)",
+  "dominant_archetype": "JEDEN z dozwolonych archetypów (np. CIEŃ, JAŹŃ, HEROS, MĘDRZEC) - TYLKO z listy powyżej",
   "reflection_question": "Jedno, precyzyjne pytanie, które uderza w punkt. Ma zaboleć lub olśnić.",
   "visual_mood": "Krótki, artystyczny opis estetyki dla generatora grafiki. Np: 'Rozpikselowany las we mgle, zgniła zieleń, szum statyczny, VHS glitch'."
 }`

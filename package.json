@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "merge-symbols": "tsx scripts/merge-duplicate-symbols.ts"
+    "merge-symbols": "tsx scripts/merge-duplicate-symbols.ts",
+    "fix-archetypes": "tsx scripts/fix-archetype-typos.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.0",

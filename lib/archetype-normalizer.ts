@@ -11,6 +11,10 @@ const PRIMARY_ARCHETYPES = [
   'PERSONA',   // The Persona
   'ANIMA',     // The Anima
   'ANIMUS',    // The Animus
+  'NEMESIS',   // Nemesis
+  'KRYTYK',    // The Critic
+  'TRICKSTER', // The Trickster
+  'DEMON',     // The Demon
 ] as const
 
 // Other notable archetypes
@@ -79,6 +83,36 @@ const ARCHETYPE_CORRECTIONS: Record<string, string> = {
   'The Animus': 'ANIMUS',
   'THE ANIMUS': 'ANIMUS',
   
+  // NEMESIS variations
+  'nemesis': 'NEMESIS',
+  'Nemesis': 'NEMESIS',
+  'NEMESIS': 'NEMESIS',
+  'The Nemesis': 'NEMESIS',
+  'THE NEMESIS': 'NEMESIS',
+  
+  // KRYTYK (The Critic) variations
+  'krytyk': 'KRYTYK',
+  'Krytyk': 'KRYTYK',
+  'KRYTYK': 'KRYTYK',
+  'CRITIC': 'KRYTYK',
+  'critic': 'KRYTYK',
+  'The Critic': 'KRYTYK',
+  'THE CRITIC': 'KRYTYK',
+  
+  // TRICKSTER variations (moved from other to primary)
+  'trickster': 'TRICKSTER',
+  'Trickster': 'TRICKSTER',
+  'TRICKSTER': 'TRICKSTER',
+  'The Trickster': 'TRICKSTER',
+  'THE TRICKSTER': 'TRICKSTER',
+  
+  // DEMON variations
+  'demon': 'DEMON',
+  'Demon': 'DEMON',
+  'DEMON': 'DEMON',
+  'The Demon': 'DEMON',
+  'THE DEMON': 'DEMON',
+  
   // Other archetypes
   
   // HEROS (The Hero) variations
@@ -128,8 +162,6 @@ const ARCHETYPE_CORRECTIONS: Record<string, string> = {
   'BLAZEN': 'BŁAZEN',
   'JESTER': 'BŁAZEN',
   'jester': 'BŁAZEN',
-  'TRICKSTER': 'BŁAZEN', // Jester = Trickster
-  'trickster': 'BŁAZEN',
   'The Jester': 'BŁAZEN',
   'THE JESTER': 'BŁAZEN',
   

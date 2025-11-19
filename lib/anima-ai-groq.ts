@@ -42,6 +42,10 @@ PRIMARY ARCHETYPES (używaj jako pierwsze):
 - PERSONA (The Persona) - maska społeczna, rola prezentowana światu
 - ANIMA (The Anima) - nieświadoma strona kobieca w mężczyznach
 - ANIMUS (The Animus) - nieświadoma strona męska w kobietach
+- NEMESIS (Nemesis) - sprawiedliwość i zemsta, kara za hybris
+- KRYTYK (The Critic) - wewnętrzny sędzia, ocena i krytyka
+- TRICKSTER (The Trickster) - chaos, transformacja, oszustwo i mądrość
+- DEMON (The Demon) - destrukcyjna siła, obsesja, ciemna energia
 
 OTHER ARCHETYPES (używaj gdy pasują lepiej):
 - HEROS (The Hero) - dążenie do udowodnienia wartości

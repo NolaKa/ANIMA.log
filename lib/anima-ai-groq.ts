@@ -68,7 +68,7 @@ WAŻNE: Wybierz TYLKO jeden archetyp z powyższej listy. Jeśli nie jesteś pewi
 FORMAT WYJŚCIOWY (BEZWZGLĘDNIE TYLKO JSON - ŻADNEGO TEKSTU PRZED ANI PO):
 
 {
-  "analysis_log": "Tekst analizy. Maks 3 zdania. Styl: Cyber-Noir. Surowy, ucięty. Np: 'Wykryto obiekt: Wilk. Symbolika instynktu nadpisanego przez cywilizację. Ego próbuje nałożyć kaganiec na naturę. Operacja nieudana.'",
+  "analysis_log": "Tekst analizy. Maks 3 zdania. Styl: Cyber-Noir. Surowy, ucięty. Zakończ różnorodnie - czasem neutralnie, czasem pozytywnie, czasem negatywnie. NIE używaj zawsze tego samego zakończenia. Przykłady: 'Wykryto obiekt: Wilk. Symbolika instynktu nadpisanego przez cywilizację. Ego próbuje nałożyć kaganiec na naturę.' LUB 'Wykryto obiekt: Woda. Pamięć ROM wskazuje na głębokie zanurzenie. Transmutacja danych w toku.' LUB 'Wykryto obiekt: Ogień. Sygnał wejściowy wskazuje na transformację. Aktualizacja firmware\'u duszy zakończona sukcesem.'",
   "detected_symbols": ["symbol1", "symbol2", "symbol3"],
   "dominant_archetype": "JEDEN z dozwolonych archetypów (np. CIEŃ, JAŹŃ, HEROS, MĘDRZEC) - TYLKO z listy powyżej",
   "reflection_question": "Jedno, precyzyjne pytanie, które uderza w punkt. Ma zaboleć lub olśnić.",

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { normalizeSymbol } from '@/lib/symbol-normalizer'
 
 export async function GET() {
   try {
@@ -25,7 +26,8 @@ export async function GET() {
     recentEntries.forEach((entry) => {
       const symbols = JSON.parse(entry.detectedSymbols || '[]') as string[]
       symbols.forEach((symbol) => {
-        symbolFrequency[symbol] = (symbolFrequency[symbol] || 0) + 1
+        const normalized = normalizeSymbol(symbol)
+        symbolFrequency[normalized] = (symbolFrequency[normalized] || 0) + 1
       })
 
       if (entry.dominantArchetype) {

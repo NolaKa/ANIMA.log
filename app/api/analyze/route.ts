@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { analyzeContent } from '@/lib/anima-ai-groq'
 import { prisma } from '@/lib/prisma'
+import { normalizeSymbols, normalizeSymbol } from '@/lib/symbol-normalizer'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,13 +18,16 @@ export async function POST(request: NextRequest) {
     // Analyze with AI
     const analysis = await analyzeContent(type as 'text' | 'image', content)
 
+    // Normalize symbols to avoid duplicates (e.g., "kot" and "koty")
+    const normalizedSymbols = normalizeSymbols(analysis.detected_symbols)
+
     // Save to database
     const entry = await prisma.entry.create({
       data: {
         type,
         contentText: type === 'text' ? content : null,
         imageUrl: type === 'image' ? content : null,
-        detectedSymbols: JSON.stringify(analysis.detected_symbols),
+        detectedSymbols: JSON.stringify(normalizedSymbols),
         dominantArchetype: analysis.dominant_archetype,
         visualMood: analysis.visual_mood,
         aiAnalysis: JSON.stringify(analysis),
@@ -32,17 +36,18 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Update or create symbols
-    for (const symbolName of analysis.detected_symbols) {
+    // Update or create symbols (using normalized names)
+    for (const symbolName of normalizedSymbols) {
+      const normalizedName = normalizeSymbol(symbolName)
       await prisma.symbol.upsert({
-        where: { name: symbolName },
+        where: { name: normalizedName },
         update: {
           occurrences: {
             increment: 1,
           },
         },
         create: {
-          name: symbolName,
+          name: normalizedName,
           archetype: analysis.dominant_archetype,
           occurrences: 1,
         },

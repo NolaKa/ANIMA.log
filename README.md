@@ -1,86 +1,84 @@
 # ANIMA.log
 
-Cyfrowy analityk jungowski - aplikacja webowa do odkrywania nieświadomości poprzez analizę snów i obrazów.
+A Jungian digital analyst - web application for exploring the unconscious through dream and image analysis.
 
-## Funkcje
+## Features
 
-- **Console Input**: Wpisywanie snów i myśli lub upload obrazów
-- **Archive**: Przeglądanie wszystkich wpisów w stylu logów systemowych
-- **Symbol Dex**: Osobista biblioteka wykrytych symboli
-- **AI Analysis**: Analiza jungowska z wykrywaniem archetypów i symboli
-- **System Konstelacji**: Automatyczne wykrywanie wzorców z ostatnich 7 dni
-- **Visual Mood**: Opis koloru/klimatu dla każdego wpisu (przygotowanie pod mandale)
+- **Console Input**: Enter dreams and thoughts or upload images
+- **Archive**: Browse all entries in system log style
+- **Symbol Dex**: Personal library of detected symbols
+- **AI Analysis**: Jungian analysis with archetype and symbol detection
+- **Constellation System**: Automatic pattern detection from the last 7 days
+- **Visual Mood**: Color/mood description for each entry (preparation for mandalas)
 
 ## System Prompt
 
-Aplikacja używa specjalnie zaprojektowanego system promptu, który:
-- Działa jak "system operacyjny nieświadomości"
-- Używa terminologii technicznej zmieszanej z mistyczną
-- Stosuje amplifikację jungowską
-- Zawsze kończy pytaniem refleksyjnym
-- Zwraca dane w formacie JSON z polami:
-  - `analysis_log` - krótka, surowa interpretacja
-  - `detected_symbols` - wykryte symbole
-  - `dominant_archetype` - dominujący archetyp
-  - `reflection_question` - pytanie do introspekcji
-  - `visual_mood` - opis koloru/klimatu
+The application uses a specially designed system prompt that:
+- Acts as an "operating system of the unconscious"
+- Uses technical terminology mixed with mystical
+- Applies Jungian amplification
+- Always ends with a reflective question
+- Returns data in JSON format with fields:
+  - `analysis_log` - short, raw interpretation
+  - `detected_symbols` - detected symbols
+  - `dominant_archetype` - dominant archetype
+  - `reflection_question` - introspection question
+  - `visual_mood` - color/mood description
 
-## Instalacja
+## Installation
 
-1. Zainstaluj zależności:
+1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Skonfiguruj zmienne środowiskowe:
+2. Configure environment variables:
 ```bash
 cp .env.example .env
 ```
 
-Edytuj `.env` i dodaj:
-- `GROQ_API_KEY` - Twój klucz API Groq (darmowe: https://console.groq.com/)
-- `DATABASE_URL` - URL bazy danych (domyślnie SQLite)
+Edit `.env` and add:
+- `GROQ_API_KEY` - Your Groq API key (free: https://console.groq.com/)
+- `DATABASE_URL` - Database URL (default SQLite)
 
-3. Zainicjalizuj bazę danych:
+3. Initialize the database:
 ```bash
 npx prisma generate
 npx prisma db push
 ```
 
-4. Uruchom aplikację:
+4. Run the application:
 ```bash
 npm run dev
 ```
 
-Aplikacja będzie dostępna pod adresem `http://localhost:3000`
+The application will be available at `http://localhost:3000`
 
-## Konfiguracja Groq API
+## Groq API Configuration
 
-Aplikacja używa Groq API, które jest **całkowicie darmowe**:
+The application uses Groq API, which is **completely free**:
 
-1. Przejdź do: https://console.groq.com/
-2. Zaloguj się (Google/GitHub)
-3. Kliknij "API Keys" → "Create API Key"
-4. Skopiuj klucz i dodaj do `.env`:
+1. Go to: https://console.groq.com/
+2. Sign in (Google/GitHub)
+3. Click "API Keys" → "Create API Key"
+4. Copy the key and add it to `.env`:
    ```
-   GROQ_API_KEY=twój_klucz_tutaj
+   GROQ_API_KEY=your_key_here
    ```
-
 
 ## Design
 
-Aplikacja wykorzystuje brutalistyczny design "Jungowski":
-- Paleta kolorów: True Black (#000000), Terminal Green (#33FF00), Error Red (#FF3333)
-- Typografia: VT323 (tytuły), JetBrains Mono (body)
-- Efekty: CRT scanlines, glitch effects, dithering dla obrazów
+The application uses a brutalist "Jungian" design:
+- Color palette: True Black (#000000), Terminal Green (#33FF00), Error Red (#FF3333)
+- Typography: VT323 (titles), JetBrains Mono (body)
+- Effects: CRT scanlines, glitch effects, image dithering
 
-## Technologie
+## Technologies
 
 - Next.js 14 (React)
 - TypeScript
 - Tailwind CSS
 - Prisma (ORM)
-- SQLite (baza danych)
-- Groq API (analiza jungowska - darmowe i szybkie)
-- Framer Motion (animacje)
-
+- SQLite (database)
+- Groq API (Jungian analysis - free and fast)
+- Framer Motion (animations)

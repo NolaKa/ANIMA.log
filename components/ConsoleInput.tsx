@@ -108,12 +108,17 @@ export default function ConsoleInput() {
           <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-3 border-2 border-terminal-green 
-                       hover:bg-terminal-green/10 hover:border-terminal-green
-                       font-vt323 text-lg"
+              disabled
+              title="Funkcja będzie wkrótce dostępna"
+              className="px-4 py-3 border-2 border-terminal-green/30 
+                       opacity-50 cursor-not-allowed
+                       font-vt323 text-lg text-terminal-green/50
+                       relative group"
             >
               [UPLOAD IMAGE]
+              <span className="absolute -bottom-8 left-0 right-0 text-xs text-terminal-green/40 font-vt323 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                Wkrótce dostępne
+              </span>
             </button>
             <input
               ref={fileInputRef}
@@ -121,6 +126,7 @@ export default function ConsoleInput() {
               accept="image/*"
               onChange={handleImageUpload}
               className="hidden"
+              disabled
             />
 
             <button

@@ -1,9 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format } from 'date-fns'
+import { format, differenceInDays } from 'date-fns'
 import { pl } from 'date-fns/locale'
 import DitheredImage from './DitheredImage'
+import DataDecay from './DataDecay'
+import CyberEsotericText from './CyberEsotericText'
+import GhostText from './GhostText'
 
 interface Entry {
   id: string
@@ -87,58 +90,67 @@ export default function Archive() {
 
   if (loading) {
     return (
-      <div className="border border-terminal-green/30 p-6">
-        <div className="text-terminal-green/60">
+      <div className="border-2 border-black p-6" style={{ backgroundColor: '#7C8A7C' }}>
+        <CyberEsotericText stability={0.85} className="font-mono" style={{ color: '#000' }}>
           &gt; LOADING ARCHIVE... <span className="cursor-blink">_</span>
-        </div>
+        </CyberEsotericText>
       </div>
     )
   }
 
   return (
     <div className="space-y-2">
-      <div className="mb-4 text-terminal-green/60 text-sm">
+      <GhostText size={14} className="mb-4 text-sm font-mono" style={{ color: '#1a2b1a' }}>
         &gt; ARCHIVE - {entries.length} ENTRIES FOUND
-      </div>
+      </GhostText>
 
       {entries.length === 0 ? (
-        <div className="border border-terminal-green/30 p-6 text-terminal-green/60">
-          &gt; NO ENTRIES FOUND. START LOGGING.
+        <div className="border-2 border-black p-6" style={{ backgroundColor: '#7C8A7C', color: '#000' }}>
+          <CyberEsotericText stability={0.9} className="font-mono">
+            &gt; NO ENTRIES FOUND. START LOGGING.
+          </CyberEsotericText>
         </div>
       ) : (
-        entries.map((entry) => (
-          <div
-            key={entry.id}
-            className="border border-terminal-green/20 p-4 
-                     hover:border-terminal-green/40 transition-colors
-                     cursor-pointer"
-            onClick={() => toggleExpand(entry.id)}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="text-terminal-green/60 text-xs mb-1">
-                  [{entry.type.toUpperCase()}] {format(new Date(entry.timestamp), 'dd.MM.yyyy HH:mm', { locale: pl })}
+        entries.map((entry) => {
+          const entryDate = new Date(entry.timestamp)
+          const ageInDays = differenceInDays(new Date(), entryDate)
+          
+          return (
+            <div 
+              key={entry.id} 
+              className="border-2 border-black p-4 cursor-pointer" 
+              style={{ 
+                backgroundColor: '#7C8A7C',
+                borderBottomWidth: '4px',
+                borderRightWidth: '4px',
+              }}
+              onClick={() => toggleExpand(entry.id)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <GhostText size={12} className="text-xs mb-1 font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+                    [{entry.type.toUpperCase()}] {format(entryDate, 'dd.MM.yyyy HH:mm', { locale: pl })}
+                  </GhostText>
+                  <GhostText size={14} className="text-sm font-mono" style={{ color: '#000' }}>
+                    {entry.type === 'text' 
+                      ? (entry.contentText || entry.content || '').substring(0, 100) + ((entry.contentText || entry.content || '').length > 100 ? '...' : '')
+                      : '[IMAGE]'}
+                  </GhostText>
+                  {entry.dominantArchetype && (
+                    <GhostText size={12} className="mt-2 text-xs font-mono" style={{ color: '#1a2b1a' }}>
+                      ARCHETYPE: {entry.dominantArchetype}
+                    </GhostText>
+                  )}
                 </div>
-                <div className="text-terminal-green text-sm font-mono">
-                  {entry.type === 'text' 
-                    ? (entry.contentText || entry.content || '').substring(0, 100) + ((entry.contentText || entry.content || '').length > 100 ? '...' : '')
-                    : '[IMAGE]'}
+                <div className="text-xs font-mono" style={{ color: '#000' }}>
+                  {expandedId === entry.id ? '[-]' : '[+]'}
                 </div>
-                {entry.dominantArchetype && (
-                  <div className="mt-2 text-terminal-amber text-xs">
-                    ARCHETYPE: {entry.dominantArchetype}
-                  </div>
-                )}
               </div>
-              <div className="text-terminal-green/30 text-xs">
-                {expandedId === entry.id ? '[-]' : '[+]'}
-              </div>
-            </div>
 
             {expandedId === entry.id && (
-              <div className="mt-4 pt-4 border-t border-terminal-green/20 space-y-3">
+              <div className="mt-4 pt-4 border-t-2 border-black space-y-3">
                 {entry.type === 'image' && entry.imageUrl && (
-                  <div className="border-2 border-terminal-green p-2">
+                  <div className="border-2 border-black p-2" style={{ backgroundColor: '#5a6b5a' }}>
                     <DitheredImage
                       src={entry.imageUrl}
                       alt="Entry"
@@ -148,21 +160,21 @@ export default function Archive() {
                 )}
                 {entry.type === 'text' && entry.contentText && (
                   <div>
-                    <span className="text-terminal-green/60 text-xs">CONTENT:</span>
-                    <div className="mt-1 text-terminal-green text-sm font-mono whitespace-pre-wrap">
+                    <GhostText size={12} className="text-xs font-mono mb-1" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>CONTENT:</GhostText>
+                    <GhostText size={14} className="mt-1 text-sm font-mono whitespace-pre-wrap" style={{ color: '#000' }}>
                       {entry.contentText}
-                    </div>
+                    </GhostText>
                   </div>
                 )}
                 {entry.detectedSymbols.length > 0 && (
                   <div>
-                    <span className="text-terminal-green/60 text-xs">SYMBOLS: </span>
+                    <GhostText size={12} className="text-xs font-mono" style={{ color: '#1a2b1a' }}>SYMBOLS: </GhostText>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {entry.detectedSymbols.map((symbol, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-1 border border-terminal-green/30 
-                                   bg-terminal-green/5 text-terminal-green text-xs"
+                          className="px-2 py-1 border-2 border-black text-xs font-mono"
+                          style={{ backgroundColor: '#7C8A7C', color: '#000' }}
                         >
                           {symbol}
                         </span>
@@ -172,32 +184,40 @@ export default function Archive() {
                 )}
                 {entry.visualMood && (
                   <div>
-                    <span className="text-terminal-green/60 text-xs">VISUAL_MOOD:</span>
-                    <div className="mt-1 text-terminal-green/80 italic text-sm">
+                    <GhostText size={12} className="text-xs font-mono" style={{ color: '#1a2b1a' }}>VISUAL_MOOD:</GhostText>
+                    <GhostText size={14} className="mt-1 italic text-sm" style={{ color: '#000' }}>
                       {entry.visualMood}
-                    </div>
+                    </GhostText>
                   </div>
                 )}
                 <div>
-                  <span className="text-terminal-green/60 text-xs">ANALYSIS_LOG:</span>
-                  <div className="mt-1 text-terminal-green text-sm font-mono whitespace-pre-wrap">
+                  <GhostText size={12} className="text-xs font-mono" style={{ color: '#1a2b1a' }}>ANALYSIS_LOG:</GhostText>
+                  <GhostText size={14} className="mt-1 text-sm font-mono whitespace-pre-wrap" style={{ color: '#000' }}>
                     {entry.analysisLog}
-                  </div>
+                  </GhostText>
                 </div>
                 <div>
-                  <span className="text-error-red text-xs">REFLECTION_QUESTION:</span>
-                  <div className="mt-1 text-error-red font-bold text-sm">
+                  <GhostText size={12} className="text-xs font-mono" style={{ color: '#000' }}>REFLECTION_QUESTION:</GhostText>
+                  <GhostText size={14} className="mt-1 font-bold text-sm font-mono" style={{ color: '#000' }}>
                     {entry.reflectionQuestion}
-                  </div>
+                  </GhostText>
                 </div>
-                <div className="pt-2 border-t border-terminal-green/20">
+                <div className="pt-2 border-t-2 border-black">
                   <button
                     onClick={(e) => handleDeleteClick(entry.id, e)}
-                    className="px-4 py-2 border-2 border-error-red/50 
-                             text-error-red/80 hover:border-error-red 
-                             hover:text-error-red hover:bg-error-red/10
-                             font-vt323 text-sm transition-colors
-                             active:bg-error-red/20"
+                    className="px-4 py-2 border-2 border-black font-mono text-sm transition-colors"
+                    style={{ 
+                      backgroundColor: '#000',
+                      color: '#7C8A7C',
+                      borderBottomWidth: '4px',
+                      borderRightWidth: '4px',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a2b1a'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#000'
+                    }}
                   >
                     [DELETE ENTRY]
                   </button>
@@ -205,40 +225,63 @@ export default function Archive() {
               </div>
             )}
           </div>
-        ))
+          )
+        })
       )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div 
-          className="fixed inset-0 bg-true-black/80 flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
           onClick={handleDeleteCancel}
         >
           <div 
-            className="border-4 border-error-red p-6 bg-true-black max-w-md w-full mx-4"
+            className="border-4 border-black p-6 max-w-md w-full mx-4"
+            style={{ backgroundColor: '#7C8A7C' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-error-red font-vt323 text-xl mb-4">
+            <CyberEsotericText stability={0.85} className="font-mono text-xl mb-4" style={{ color: '#000' }}>
               &gt; DELETE CONFIRMATION
-            </div>
-            <div className="text-terminal-green/80 font-mono text-sm mb-6">
+            </CyberEsotericText>
+            <div className="font-mono text-sm mb-6" style={{ color: '#000' }}>
               Are you sure you want to delete this entry?<br/>
               This operation cannot be undone.
             </div>
             <div className="flex gap-4">
               <button
                 onClick={handleDeleteConfirm}
-                className="flex-1 px-4 py-3 border-2 border-error-red 
-                         bg-error-red/20 text-error-red hover:bg-error-red/30
-                         font-vt323 text-lg transition-colors"
+                className="flex-1 px-4 py-3 border-2 border-black font-mono text-lg transition-colors"
+                style={{ 
+                  backgroundColor: '#000',
+                  color: '#7C8A7C',
+                  borderBottomWidth: '4px',
+                  borderRightWidth: '4px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1a2b1a'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#000'
+                }}
               >
                 [CONFIRM DELETE]
               </button>
               <button
                 onClick={handleDeleteCancel}
-                className="flex-1 px-4 py-3 border-2 border-terminal-green/50 
-                         bg-terminal-green/10 text-terminal-green hover:bg-terminal-green/20
-                         font-vt323 text-lg transition-colors"
+                className="flex-1 px-4 py-3 border-2 border-black font-mono text-lg transition-colors"
+                style={{ 
+                  backgroundColor: '#7C8A7C',
+                  color: '#000',
+                  borderBottomWidth: '4px',
+                  borderRightWidth: '4px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#5a6b5a'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#7C8A7C'
+                }}
               >
                 [CANCEL]
               </button>

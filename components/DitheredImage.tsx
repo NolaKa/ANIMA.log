@@ -103,8 +103,6 @@ export default function DitheredImage({ src, alt, className }: DitheredImageProp
         alt={alt}
         className={`${className} block`}
         style={{
-          imageRendering: 'pixelated',
-          imageRendering: '-moz-crisp-edges',
           imageRendering: 'crisp-edges',
         }}
       />

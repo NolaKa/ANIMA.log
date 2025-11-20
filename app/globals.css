@@ -10,6 +10,15 @@
   --error-red: #FF3333;
   --true-black: #000000;
   --pure-white: #FFFFFF;
+  
+  /* Dissociative UI Colors */
+  --ghost-white: rgba(255, 255, 255, 0.4);
+  --ghost-white-bright: rgba(255, 255, 255, 0.6);
+  --ghost-white-dim: rgba(255, 255, 255, 0.2);
+  --dissociative-bg: #0a0a0a;
+  --dissociative-bg-noise: #111111;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.03);
 }
 
 * {
@@ -19,14 +28,43 @@
 }
 
 body {
-  background-color: var(--true-black);
-  color: var(--terminal-green);
-  font-family: 'JetBrains Mono', monospace;
+  background-color: #7C8A7C; /* Sage Grey - kolor ze zdjęcia */
+  color: #000;
+  font-family: 'Courier New', 'Space Mono', monospace;
   overflow-x: hidden;
   position: relative;
 }
 
-/* CRT Scanlines Effect */
+/* Pixel grid background */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #7C8A7C;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.1) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.1) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 3px
+    );
+}
+
+/* Pixel scanlines */
 body::before {
   content: '';
   position: fixed;
@@ -36,9 +74,9 @@ body::before {
   height: 100%;
   background: linear-gradient(
     transparent 50%,
-    rgba(51, 255, 0, 0.03) 50%
+    rgba(0, 0, 0, 0.05) 50%
   );
-  background-size: 100% 4px;
+  background-size: 100% 2px;
   pointer-events: none;
   z-index: 9999;
   animation: scanline 8s linear infinite;
@@ -144,27 +182,134 @@ body {
   mix-blend-mode: overlay;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - dissociative */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--true-black);
+  background: var(--dissociative-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--terminal-green);
-  opacity: 0.3;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  opacity: 0.5;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Selection */
 ::selection {
-  background: var(--terminal-green);
-  color: var(--true-black);
+  background: var(--ghost-white);
+  color: var(--dissociative-bg);
+}
+
+/* Ghost Text Effect */
+.ghost-text {
+  position: relative;
+}
+
+.ghost-text::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  color: rgba(0, 0, 0, 0.3);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  opacity: 0.5;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Glass Panel Effect */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  position: relative;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid var(--glass-border);
+  pointer-events: none;
+}
+
+/* Floating/Glitch effect */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Dissociative blur transition */
+@keyframes fade-in-blur {
+  0% { 
+    opacity: 0;
+    filter: blur(10px);
+  }
+  100% { 
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+.fade-in-blur {
+  animation: fade-in-blur 0.8s ease-out;
+}
+
+/* Ghost trail effect for text input */
+@keyframes ghost-trail {
+  0% {
+    opacity: 0.8;
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    opacity: 0.4;
+    transform: translateX(2px) translateY(1px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(4px) translateY(2px);
+  }
+}
+
+/* Ethereal glow */
+.ethereal-glow {
+  box-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.1),
+    0 0 40px rgba(255, 255, 255, 0.05),
+    inset 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+/* Dissociative artifact - subtle displacement */
+@keyframes artifact-drift {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(1px, -1px);
+  }
+  50% {
+    transform: translate(-1px, 1px);
+  }
+  75% {
+    transform: translate(1px, 1px);
+  }
+}
+
+.artifact-drift {
+  animation: artifact-drift 8s ease-in-out infinite;
 }
 

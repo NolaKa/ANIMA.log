@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { pl } from 'date-fns/locale'
+import CyberEsotericText from './CyberEsotericText'
+import GhostText from './GhostText'
+import BreathingElement from './BreathingElement'
 
 interface Symbol {
   id: string
@@ -136,17 +139,18 @@ export default function SymbolLib() {
   }
 
   const getCategoryColor = (category: string | null): string => {
+    // Cyber-Ezoteryczne kolory
     switch (category) {
       case 'NATURE':
-        return '#33FF00'
+        return '#1a2b1a'
       case 'PERSONA':
-        return '#FFB000'
+        return '#000'
       case 'SHADOW':
-        return '#FF3333'
+        return '#000'
       case 'SACRED':
-        return '#00FFFF'
+        return '#1a2b1a'
       default:
-        return '#888888'
+        return '#1a2b1a'
     }
   }
 
@@ -167,31 +171,38 @@ export default function SymbolLib() {
 
   if (loading) {
     return (
-      <div className="border border-terminal-green/30 p-6">
-        <div className="text-terminal-green/60">
+      <div className="border-2 border-black p-6" style={{ backgroundColor: '#7C8A7C' }}>
+        <CyberEsotericText stability={0.85} className="font-mono text-base" style={{ color: '#000' }}>
           &gt; LOADING SYMBOL.LIB... <span className="cursor-blink">_</span>
-        </div>
+        </CyberEsotericText>
       </div>
     )
   }
 
   return (
-    <div className="flex gap-4 h-[600px]">
-      {/* Left Panel - File List (Norton Commander style) */}
-      <div className="flex-1 border-2 border-terminal-green/30 bg-true-black overflow-hidden flex flex-col">
+    <div className="flex gap-4 h-[600px] fade-in-blur">
+      {/* Left Panel - File List */}
+      <div className="flex-1 overflow-hidden flex flex-col border-2 border-black" style={{ backgroundColor: '#7C8A7C' }}>
         {/* Header */}
-        <div className="border-b-2 border-terminal-green p-2 bg-terminal-green/10">
-          <div className="flex items-center justify-between text-terminal-green font-vt323 text-sm">
+        <div className="border-b-2 border-black p-2" style={{ backgroundColor: '#5a6b5a' }}>
+          <div className="flex items-center justify-between font-mono text-sm" style={{ color: '#000' }}>
             <div className="flex items-center gap-4">
-              <span>&gt; SYMBOL.LIB</span>
-              <span className="text-terminal-green/60">({symbols.length} files)</span>
+              <CyberEsotericText stability={0.9} className="font-mono">
+                &gt; SYMBOL.LIB
+              </CyberEsotericText>
+              <GhostText size={12} className="text-xs" style={{ color: '#1a2b1a' }}>({symbols.length} files)</GhostText>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-terminal-green/60">SORT:</span>
+              <GhostText size={12} style={{ color: '#1a2b1a', letterSpacing: '1px' }}>SORT:</GhostText>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-true-black border border-terminal-green/30 text-terminal-green text-xs px-2 py-1 font-vt323"
+                className="font-mono text-xs px-2 py-1 border-2 border-black"
+                style={{
+                  backgroundColor: '#7C8A7C',
+                  borderColor: '#000',
+                  color: '#000',
+                }}
               >
                 <option value="level">LEVEL</option>
                 <option value="name">NAME</option>
@@ -203,85 +214,89 @@ export default function SymbolLib() {
         </div>
 
         {/* File List */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-2 space-y-1">
-            {sortedSymbols.map((symbol) => {
-              const isSelected = selectedSymbol?.symbol.id === symbol.id
-              const categoryColor = getCategoryColor(symbol.category)
-              const lastSeenDate = new Date(symbol.lastSeen)
-              const lastSeenText = formatDistanceToNow(lastSeenDate, { 
-                addSuffix: true, 
-                locale: pl 
-              })
+        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+          {sortedSymbols.map((symbol) => {
+            const isSelected = selectedSymbol?.symbol.id === symbol.id
+            const categoryColor = getCategoryColor(symbol.category)
+            const lastSeenDate = new Date(symbol.lastSeen)
+            const lastSeenText = formatDistanceToNow(lastSeenDate, { 
+              addSuffix: true, 
+              locale: pl 
+            })
 
-              return (
+            return (
+              <BreathingElement key={symbol.id} intensity={0.02} duration={4000 + Math.random() * 2000}>
                 <div
-                  key={symbol.id}
                   onClick={() => fetchSymbolHistory(symbol.id)}
-                  className={`flex items-center gap-2 p-2 cursor-pointer border transition-colors
-                    ${isSelected 
-                      ? 'border-terminal-green bg-terminal-green/10' 
-                      : 'border-terminal-green/20 hover:border-terminal-green/40'
-                    }`}
+                  className="flex items-center gap-2 p-2 cursor-pointer border-2 transition-all"
+                  style={{
+                    borderColor: '#000',
+                    backgroundColor: isSelected ? '#5a6b5a' : '#7C8A7C',
+                    borderBottomWidth: isSelected ? '4px' : '2px',
+                    borderRightWidth: isSelected ? '4px' : '2px',
+                  }}
                 >
                   {/* File Icon */}
-                  <div className="text-terminal-green font-mono text-xs">
+                  <div className="font-mono text-xs" style={{ color: '#000' }}>
                     {symbol.level === 1 ? '▢' : symbol.level === 2 ? '▦' : symbol.level === 3 ? '▩' : symbol.level === 4 ? '▨' : '█'}
                   </div>
                   
                   {/* Filename */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-terminal-green font-mono text-sm truncate">
+                      <GhostText size={14} className="font-mono text-sm truncate" style={{ color: '#000' }}>
                         {symbol.name}.sym
-                      </span>
-                      <span className="text-terminal-green/40 text-xs">
+                      </GhostText>
+                      <span className="text-xs font-mono" style={{ color: '#1a2b1a' }}>
                         L{symbol.level}
                       </span>
                     </div>
                   </div>
 
                   {/* File Info */}
-                  <div className="text-terminal-green/60 text-xs font-mono whitespace-nowrap">
+                  <div className="text-xs font-mono whitespace-nowrap">
                     <div style={{ color: categoryColor }}>
                       {symbol.category || 'UNK'}
                     </div>
-                    <div className="text-terminal-green/40">
+                    <div style={{ color: '#1a2b1a' }}>
                       {symbol.occurrences}x
                     </div>
                   </div>
                 </div>
-              )
-            })}
-          </div>
+              </BreathingElement>
+            )
+          })}
         </div>
       </div>
 
       {/* Right Panel - File Details */}
-      <div className="flex-1 border-2 border-terminal-green/30 bg-true-black overflow-y-auto">
+      <div className="flex-1 overflow-y-auto border-2 border-black" style={{ backgroundColor: '#7C8A7C' }}>
         {selectedSymbol ? (
           loadingHistory ? (
-            <div className="p-6 text-terminal-green/60 text-center">
-              &gt; LOADING... <span className="cursor-blink">_</span>
+            <div className="p-6 text-center">
+              <CyberEsotericText stability={0.85} className="font-mono text-base" style={{ color: '#000' }}>
+                &gt; LOADING... <span className="cursor-blink">_</span>
+              </CyberEsotericText>
             </div>
           ) : (
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 fade-in-blur">
               {/* File Header */}
-              <div className="border-b-2 border-terminal-green/30 pb-3">
+              <div className="border-b-2 border-black pb-3">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <div className="text-terminal-green font-vt323 text-xl mb-1">
+                    <CyberEsotericText stability={0.7} className="font-mono text-xl mb-1" style={{ color: '#000' }}>
                       &gt; {selectedSymbol.symbol.name.toUpperCase()}.SYM
-                    </div>
-                    <div className="text-terminal-green/60 text-xs font-mono">
+                    </CyberEsotericText>
+                    <GhostText size={12} className="text-xs font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
                       LEVEL {selectedSymbol.symbol.level} | {selectedSymbol.symbol.occurrences} OCCURRENCES
-                    </div>
+                    </GhostText>
                   </div>
                   <div 
-                    className="text-xs font-mono px-2 py-1 border"
+                    className="text-xs font-mono px-2 py-1 border-2 border-black"
                     style={{ 
-                      borderColor: getCategoryColor(selectedSymbol.symbol.category),
-                      color: getCategoryColor(selectedSymbol.symbol.category)
+                      borderColor: '#000',
+                      color: '#000',
+                      backgroundColor: '#7C8A7C',
                     }}
                   >
                     {selectedSymbol.symbol.category || 'UNKNOWN'}
@@ -290,81 +305,81 @@ export default function SymbolLib() {
               </div>
 
               {/* Visual Representation */}
-              <div className="border border-terminal-green/30 p-4 bg-terminal-green/5">
-                <div className="text-terminal-green/60 text-xs mb-2 font-mono">
+              <div className="border-2 border-black p-4" style={{ backgroundColor: '#5a6b5a' }}>
+                <GhostText size={12} className="text-xs mb-2 font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
                   VISUAL REPRESENTATION (LEVEL {selectedSymbol.symbol.level}):
-                </div>
-                <pre className="text-terminal-green font-mono text-xs leading-tight">
+                </GhostText>
+                <pre className="font-mono text-xs leading-tight" style={{ color: '#000' }}>
                   {getLevelVisual(selectedSymbol.symbol.level, selectedSymbol.symbol.name)}
                 </pre>
               </div>
 
               {/* Level Description */}
-              <div className="border border-terminal-green/30 p-3">
-                <div className="text-terminal-green/60 text-xs mb-2 font-mono">
+              <div className="border-2 border-black p-3" style={{ backgroundColor: '#7C8A7C' }}>
+                <GhostText size={12} className="text-xs mb-2 font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
                   EVOLUTION STATUS:
-                </div>
-                <div className="text-terminal-green text-sm font-mono">
+                </GhostText>
+                <GhostText size={14} className="font-mono text-sm" style={{ color: '#000' }}>
                   {getLevelDescription(selectedSymbol.symbol.level)}
-                </div>
+                </GhostText>
               </div>
 
               {/* Meaning */}
               {selectedSymbol.symbol.meaning && (
-                <div className="border border-terminal-green/30 p-3">
-                  <div className="text-terminal-green/60 text-xs mb-2 font-mono">
+                <div className="border-2 border-black p-3" style={{ backgroundColor: '#7C8A7C' }}>
+                  <GhostText size={12} className="text-xs mb-2 font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
                     MEANING:
-                  </div>
-                  <div className="text-terminal-green text-sm">
+                  </GhostText>
+                  <GhostText size={14} className="text-sm" style={{ color: '#000' }}>
                     {selectedSymbol.symbol.meaning}
-                  </div>
+                  </GhostText>
                 </div>
               )}
 
               {/* Description (deeper at higher levels) */}
               {selectedSymbol.symbol.description && (
-                <div className="border border-terminal-green/30 p-3">
-                  <div className="text-terminal-green/60 text-xs mb-2 font-mono">
+                <div className="border-2 border-black p-3" style={{ backgroundColor: '#7C8A7C' }}>
+                  <GhostText size={12} className="text-xs mb-2 font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
                     DESCRIPTION:
-                  </div>
-                  <div className="text-terminal-green text-sm font-mono whitespace-pre-wrap">
+                  </GhostText>
+                  <GhostText size={14} className="font-mono text-sm whitespace-pre-wrap" style={{ color: '#000' }}>
                     {selectedSymbol.symbol.description}
-                  </div>
+                  </GhostText>
                 </div>
               )}
 
               {/* Timestamps */}
-              <div className="border border-terminal-green/30 p-3">
-                <div className="text-terminal-green/60 text-xs mb-2 font-mono">
+              <div className="border-2 border-black p-3" style={{ backgroundColor: '#7C8A7C' }}>
+                <GhostText size={12} className="text-xs mb-2 font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
                   TIMELINE:
-                </div>
-                <div className="space-y-1 text-terminal-green text-xs font-mono">
-                  <div>
+                </GhostText>
+                <div className="space-y-1 text-xs font-mono">
+                  <div style={{ color: '#000' }}>
                     FIRST SEEN: {format(new Date(selectedSymbol.symbol.firstSeen), 'dd.MM.yyyy HH:mm', { locale: pl })}
                   </div>
-                  <div className="text-terminal-amber">
+                  <div style={{ color: '#000' }}>
                     LAST SEEN: {format(new Date(selectedSymbol.symbol.lastSeen), 'dd.MM.yyyy HH:mm', { locale: pl })} ({formatDistanceToNow(new Date(selectedSymbol.symbol.lastSeen), { addSuffix: true, locale: pl })})
                   </div>
                 </div>
               </div>
 
               {/* Occurrence History */}
-              <div className="border border-terminal-green/30 p-3">
-                <div className="text-terminal-green/60 text-xs mb-2 font-mono">
+              <div className="border-2 border-black p-3" style={{ backgroundColor: '#7C8A7C' }}>
+                <GhostText size={12} className="text-xs mb-2 font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
                   OCCURRENCE HISTORY ({selectedSymbol.occurrences.length} entries):
-                </div>
+                </GhostText>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {selectedSymbol.occurrences.map((occ, idx) => (
                     <div 
                       key={idx}
-                      className="border-l-2 border-terminal-green/30 pl-2 py-1 text-xs"
+                      className="border-l-2 border-black pl-2 py-1 text-xs"
                     >
-                      <div className="text-terminal-green/60 font-mono">
+                      <div className="font-mono" style={{ color: '#1a2b1a' }}>
                         [{occ.type.toUpperCase()}] {format(new Date(occ.timestamp), 'dd.MM.yyyy HH:mm', { locale: pl })}
                       </div>
-                      <div className="text-terminal-green/80 text-xs font-mono mt-1">
+                      <GhostText size={12} className="text-xs font-mono mt-1" style={{ color: '#000' }}>
                         {occ.contentPreview}
-                      </div>
+                      </GhostText>
                     </div>
                   ))}
                 </div>
@@ -372,8 +387,10 @@ export default function SymbolLib() {
             </div>
           )
         ) : (
-          <div className="p-6 text-terminal-green/60 text-center">
-            &gt; SELECT A SYMBOL FILE TO VIEW DETAILS
+          <div className="p-6 text-center">
+            <GhostText size={16} className="font-mono text-base" style={{ color: '#000' }}>
+              &gt; SELECT A SYMBOL FILE TO VIEW DETAILS
+            </GhostText>
           </div>
         )}
       </div>

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import CyberEsotericText from './CyberEsotericText'
+import GhostText from './GhostText'
 
 interface Node {
   id: string
@@ -136,19 +138,24 @@ export default function ConstellationGraph() {
     setGridItems(allItems)
   }
 
-  const getCategoryColor = (category: string | null): string => {
+  const getCategoryColor = (category: string | null, isSelected: boolean): string => {
     switch (category) {
       case 'NATURE':
-        return '#33FF00' // Terminal green
+        return isSelected ? '#1a3d1a' : '#2d5d2d' // Ciemnozielony
       case 'PERSONA':
-        return '#FFB000' // Amber
+        return isSelected ? '#4d3d1a' : '#5d4d2d' // Brązowo-żółty
       case 'SHADOW':
-        return '#FF3333' // Error red
+        return isSelected ? '#000' : '#1a1a1a' // Czarny
       case 'SACRED':
-        return '#00FFFF' // Cyan
+        return isSelected ? '#2d4d3d' : '#3d5d4d' // Szaro-zielony
       default:
-        return '#888888' // Gray
+        return isSelected ? '#000' : '#1a2b1a' // Domyślny szary
     }
+  }
+
+  const shouldUseGhost = (category: string | null): boolean => {
+    // SHADOW i SACRED mają efekt ghost
+    return category === 'SHADOW' || category === 'SACRED'
   }
 
   // Get opacity based on selection state
@@ -207,18 +214,20 @@ export default function ConstellationGraph() {
 
   if (loading) {
     return (
-      <div className="border border-terminal-green/30 p-6">
-        <div className="text-terminal-green/60">
+      <div className="border-2 border-black p-6" style={{ backgroundColor: '#7C8A7C' }}>
+        <CyberEsotericText stability={0.85} className="font-mono text-base" style={{ color: '#000' }}>
           &gt; LOADING MEMORY DUMP... <span className="cursor-blink">_</span>
-        </div>
+        </CyberEsotericText>
       </div>
     )
   }
 
   if (gridItems.length === 0) {
     return (
-      <div className="border border-terminal-green/30 p-6 text-terminal-green/60">
-        &gt; NO DATA FOUND. ANALYZE MORE ENTRIES TO BUILD MEMORY DUMP.
+      <div className="border-2 border-black p-6" style={{ backgroundColor: '#7C8A7C' }}>
+        <CyberEsotericText stability={0.9} className="font-mono text-base" style={{ color: '#000' }}>
+          &gt; NO DATA FOUND. ANALYZE MORE ENTRIES TO BUILD MEMORY DUMP.
+        </CyberEsotericText>
       </div>
     )
   }
@@ -226,19 +235,20 @@ export default function ConstellationGraph() {
   const selectedItem = gridItems.find(i => i.id === selectedId)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 fade-in-blur">
       {/* Header */}
-      <div className="border-b border-terminal-green/30 pb-3">
-        <div className="text-[#FFB000] font-vt323 text-sm mb-3">
+      <div className="border-2 border-black p-4 mb-4" style={{ backgroundColor: '#7C8A7C' }}>
+        <GhostText size={14} className="font-mono text-sm mb-4" style={{ color: '#000' }}>
           {getConnectionInfo()}
-        </div>
-        
+        </GhostText>
+
         {/* Category Filter */}
         <div className="flex flex-wrap gap-2 text-xs">
-          <span className="text-terminal-green/60">CATEGORIES:</span>
+          <GhostText size={12} className="font-mono" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+            CATEGORIES:
+          </GhostText>
           {(['NATURE', 'PERSONA', 'SHADOW', 'SACRED', null] as const).map((cat) => {
             const isVisible = categoryFilter.has(cat)
-            const color = cat ? getCategoryColor(cat) : '#888888'
             return (
               <button
                 key={cat || 'UNKNOWN'}
@@ -251,11 +261,13 @@ export default function ConstellationGraph() {
                   }
                   setCategoryFilter(newFilter)
                 }}
-                className="px-2 py-1 border transition-colors"
+                className="px-2 py-1 border-2 border-black font-mono text-xs transition-all"
                 style={{
-                  borderColor: isVisible ? color : color + '40',
-                  backgroundColor: isVisible ? color + '10' : 'transparent',
-                  color: isVisible ? color : color + '60',
+                  borderColor: '#000',
+                  backgroundColor: isVisible ? '#000' : '#7C8A7C',
+                  color: isVisible ? '#7C8A7C' : '#000',
+                  borderBottomWidth: isVisible ? '4px' : '2px',
+                  borderRightWidth: isVisible ? '4px' : '2px',
                 }}
               >
                 {cat || 'UNKNOWN'}
@@ -264,9 +276,9 @@ export default function ConstellationGraph() {
           })}
         </div>
       </div>
-          
+
       {/* Scattered Words */}
-      <div className="bg-true-black overflow-hidden relative" style={{ height: '600px' }}>
+      <div className="overflow-hidden relative fade-in-blur" style={{ height: '600px', backgroundColor: 'transparent' }}>
         {gridItems
           .filter((item) => {
             // Filter by category - show noise always, symbols only if category is visible
@@ -276,32 +288,80 @@ export default function ConstellationGraph() {
           })
           .map((item) => {
             const isBig = item.size === 2
-            const color = item.type === 'symbol' && item.node 
-              ? getCategoryColor(item.node.category) 
-              : '#1a441a'
+            const isSelected = item.id === selectedId
+            const opacity = getOpacity(item)
+            
+            if (item.type === 'noise') {
+              return (
+                <div
+                  key={item.id}
+                  className="absolute cursor-pointer transition-all duration-300 font-mono"
+                  style={{
+                    left: `${item.x || 50}%`,
+                    top: `${item.y || 50}%`,
+                    transform: 'translate(-50%, -50%)',
+                    fontSize: '14px',
+                    color: '#1a2b1a',
+                    opacity: opacity * 0.5,
+                    zIndex: 1,
+                  }}
+                >
+                  {item.label}
+                </div>
+              )
+            }
+            
+            // Symbol with category styling
+            const category = item.node?.category || null
+            const categoryColor = getCategoryColor(category, isSelected)
+            const useGhost = shouldUseGhost(category)
+            
+            const textContent = `[${item.label.toUpperCase()}]`
+            
+            if (useGhost) {
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => {
+                    setSelectedId(item.id === selectedId ? null : item.id)
+                  }}
+                  className="absolute cursor-pointer transition-all duration-300 font-mono"
+                  style={{
+                    left: `${item.x || 50}%`,
+                    top: `${item.y || 50}%`,
+                    transform: 'translate(-50%, -50%)',
+                    fontSize: isBig ? '24px' : '16px',
+                    fontWeight: isSelected ? 'bold' : 'normal',
+                    opacity,
+                    zIndex: isSelected ? 10 : (selectedItem && selectedItem.relations.includes(item.id) ? 5 : 1),
+                  }}
+                >
+                  <GhostText size={isBig ? 24 : 16} style={{ color: categoryColor }}>
+                    {textContent}
+                  </GhostText>
+                </div>
+              )
+            }
             
             return (
               <div
                 key={item.id}
                 onClick={() => {
-                  if (item.type === 'symbol') {
-                    setSelectedId(item.id === selectedId ? null : item.id)
-                  }
+                  setSelectedId(item.id === selectedId ? null : item.id)
                 }}
-                className="absolute cursor-pointer transition-all duration-200 font-vt323"
+                className="absolute cursor-pointer transition-all duration-300 font-mono"
                 style={{
                   left: `${item.x || 50}%`,
                   top: `${item.y || 50}%`,
                   transform: 'translate(-50%, -50%)',
                   fontSize: isBig ? '24px' : '16px',
-                  color: item.id === selectedId ? '#FFFFFF' : (item.type === 'noise' ? '#1a441a' : color),
-                  fontWeight: item.id === selectedId ? 'bold' : 'normal',
-                  opacity: getOpacity(item),
-                  textShadow: item.id === selectedId ? '0 0 10px currentColor' : 'none',
-                  zIndex: item.id === selectedId ? 10 : (selectedItem && selectedItem.relations.includes(item.id) ? 5 : 1),
+                  color: categoryColor,
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                  opacity,
+                  zIndex: isSelected ? 10 : (selectedItem && selectedItem.relations.includes(item.id) ? 5 : 1),
                 }}
               >
-                {item.type === 'symbol' ? `[${item.label.toUpperCase()}]` : item.label}
+                {textContent}
               </div>
             )
           })}
@@ -309,16 +369,18 @@ export default function ConstellationGraph() {
 
       {/* Status bar */}
       {selectedId && selectedItem && selectedItem.type === 'symbol' && (
-        <div className="border border-terminal-green/30 p-4 bg-true-black">
-          <div className="text-terminal-green font-vt323 text-lg mb-2">
+        <div className="border-2 border-black p-4" style={{ backgroundColor: '#7C8A7C' }}>
+          <CyberEsotericText stability={0.7} className="font-mono text-lg mb-3" style={{ color: '#000' }}>
             &gt; {selectedItem.label.toUpperCase()}
-          </div>
-          <div className="text-terminal-green/60 text-xs font-mono">
+          </CyberEsotericText>
+          <GhostText size={12} className="text-xs font-mono mb-4" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
             CATEGORY: {selectedItem.node?.category || 'UNKNOWN'} | LEVEL: {selectedItem.node?.level || 1} | OCCURRENCES: {selectedItem.node?.occurrences || 0}
-          </div>
+          </GhostText>
           {selectedItem.relations.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-terminal-green/20">
-              <div className="text-terminal-green/60 text-xs mb-2">CONNECTED SYMBOLS:</div>
+            <div className="mt-4 pt-4 border-t-2 border-black">
+              <GhostText size={12} className="text-xs font-mono mb-3" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+                CONNECTED SYMBOLS:
+              </GhostText>
               <div className="flex flex-wrap gap-2">
                 {selectedItem.relations.map((relId) => {
                   const relatedNode = graphData.nodes.find(n => n.id === relId)
@@ -327,12 +389,24 @@ export default function ConstellationGraph() {
                   )
                   if (!relatedNode) return null
                   
+                  const relatedColor = getCategoryColor(relatedNode.category, false)
+                  const relatedUseGhost = shouldUseGhost(relatedNode.category)
+                  
                   return (
                     <span
                       key={relId}
-                      className="px-2 py-1 border border-terminal-green/30 bg-terminal-green/5 text-terminal-green text-xs"
+                      className="px-2 py-1 font-mono text-xs"
+                          style={{ 
+                        color: relatedColor,
+                      }}
                     >
-                      {relatedNode.name} ({edge ? edge.strength : '?'}x)
+                      {relatedUseGhost ? (
+                        <GhostText size={12} style={{ color: relatedColor }}>
+                          {relatedNode.name} ({edge ? edge.strength : '?'}x)
+                        </GhostText>
+                      ) : (
+                        `${relatedNode.name} (${edge ? edge.strength : '?'}x)`
+                      )}
                     </span>
                   )
                 })}
@@ -342,9 +416,9 @@ export default function ConstellationGraph() {
         </div>
       )}
 
-      <div className="text-terminal-green/40 text-xs font-mono">
+      <GhostText size={12} className="text-xs font-mono" style={{ color: '#1a2b1a' }}>
         &gt; CLICK SYMBOL TO FOCUS | CLICK AGAIN TO DESELECT
-      </div>
+      </GhostText>
     </div>
   )
 }

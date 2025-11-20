@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import CyberEsotericText from './CyberEsotericText'
+import GhostText from './GhostText'
 
 interface Constellation {
   pattern: string
@@ -45,27 +47,34 @@ export default function ConstellationAlert() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-4 right-4 z-50 max-w-md border-2 border-error-red 
-                   bg-true-black p-6 shadow-lg"
+          className="fixed top-4 right-4 z-50 max-w-md border-2 border-black p-6"
+          style={{ 
+            backgroundColor: '#7C8A7C',
+            borderBottomWidth: '4px',
+            borderRightWidth: '4px',
+          }}
         >
           <div className="mb-4">
-            <div className="text-error-red font-vt323 text-2xl mb-2 glitch" data-text={constellation.pattern}>
+            <CyberEsotericText stability={0.7} className="font-mono text-2xl mb-2" style={{ color: '#000' }}>
               {constellation.pattern}
-            </div>
-            <div className="text-terminal-green text-sm">
+            </CyberEsotericText>
+            <GhostText size={14} className="text-sm" style={{ color: '#000' }}>
               {constellation.description}
-            </div>
+            </GhostText>
           </div>
 
           {constellation.symbols.length > 0 && (
             <div className="mb-4">
-              <div className="text-terminal-green/60 text-xs mb-2">SYMBOLS:</div>
+              <GhostText size={12} className="text-xs font-mono mb-2" style={{ color: '#1a2b1a' }}>SYMBOLS:</GhostText>
               <div className="flex flex-wrap gap-2">
                 {constellation.symbols.map((symbol, idx) => (
                   <span
                     key={idx}
-                    className="px-2 py-1 border border-error-red/30 
-                             bg-error-red/10 text-error-red text-xs"
+                    className="px-2 py-1 border-2 border-black text-xs font-mono"
+                    style={{
+                      backgroundColor: '#7C8A7C',
+                      color: '#000',
+                    }}
                   >
                     {symbol}
                   </span>
@@ -75,21 +84,29 @@ export default function ConstellationAlert() {
           )}
 
           {constellation.archetype && (
-            <div className="mb-4 text-terminal-amber text-sm">
+            <GhostText size={14} className="mb-4 text-sm font-mono" style={{ color: '#000' }}>
               ARCHETYPE: {constellation.archetype}
-            </div>
+            </GhostText>
           )}
 
-          <div className="mt-4 pt-4 border-t border-error-red/30">
-            <div className="text-error-red text-xs font-bold">
+          <div className="mt-4 pt-4 border-t-2 border-black">
+            <GhostText size={12} className="text-xs font-bold font-mono" style={{ color: '#000' }}>
               {getConstellationQuestion(constellation.pattern)}
-            </div>
+            </GhostText>
           </div>
 
           <button
             onClick={() => setIsVisible(false)}
-            className="mt-4 text-terminal-green/60 text-xs hover:text-terminal-green 
-                     transition-colors"
+            className="mt-4 text-xs font-mono transition-colors"
+            style={{ 
+              color: '#1a2b1a',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#000'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#1a2b1a'
+            }}
           >
             [DISMISS]
           </button>

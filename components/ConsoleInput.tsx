@@ -3,6 +3,9 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import DitheredImage from './DitheredImage'
+import CyberEsotericText from './CyberEsotericText'
+import GhostText from './GhostText'
+import BreathingElement from './BreathingElement'
 
 interface AnalysisResult {
   analysis_log: string
@@ -80,26 +83,28 @@ export default function ConsoleInput() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="border-2 border-terminal-green p-6 bg-true-black">
-        <div className="mb-4 text-terminal-green/60 font-vt323 text-lg">
+    <div className="space-y-6 fade-in-blur">
+      <div className="border-2 border-black p-6" style={{ backgroundColor: '#7C8A7C' }}>
+        <GhostText size={14} className="mb-4 font-mono text-sm" style={{ color: '#1a2b1a', letterSpacing: '2px' }}>
           &gt; CONSOLE INPUT
-        </div>
+        </GhostText>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-start gap-2">
-            <span className="text-terminal-green mt-1 font-vt323 text-xl">
+            <GhostText size={18} className="mt-1 font-mono text-lg" style={{ color: '#000' }}>
               root@psyche:~$
-            </span>
+            </GhostText>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="_"
-              className="flex-1 bg-true-black text-terminal-green font-vt323 
+              className="flex-1 bg-transparent font-mono 
                        border-none outline-none resize-none
-                       placeholder-terminal-green/50
-                       focus:placeholder-terminal-green/20
-                       text-xl leading-relaxed"
+                       text-lg leading-relaxed"
+              style={{
+                color: '#000',
+                caretColor: '#000',
+              }}
               rows={8}
               disabled={isAnalyzing}
             />
@@ -129,17 +134,26 @@ export default function ConsoleInput() {
               disabled
             />
 
-            <button
-              type="submit"
-              disabled={isAnalyzing || (!input.trim() && !imagePreview)}
-              className="px-6 py-3 bg-terminal-green text-true-black 
-                       hover:bg-terminal-green/90
-                       disabled:opacity-30 disabled:cursor-not-allowed
-                       font-vt323 text-xl font-bold
-                       border-0"
-            >
-              {isAnalyzing ? '[ANALYZING...]' : '[ EXECUTE ]'}
-            </button>
+            <BreathingElement intensity={0.03} duration={3000}>
+              <button
+                type="submit"
+                disabled={isAnalyzing || (!input.trim() && !imagePreview)}
+                className="px-6 py-3 font-mono text-lg
+                         disabled:opacity-30 disabled:cursor-not-allowed
+                         border-2 transition-all float"
+                style={{
+                  borderColor: '#000',
+                  backgroundColor: isAnalyzing || (!input.trim() && !imagePreview) 
+                    ? '#7C8A7C' 
+                    : '#000',
+                  color: isAnalyzing || (!input.trim() && !imagePreview) ? '#000' : '#7C8A7C',
+                  borderBottomWidth: '4px',
+                  borderRightWidth: '4px',
+                }}
+              >
+                {isAnalyzing ? '[ANALYZING...]' : '[ EXECUTE ]'}
+              </button>
+            </BreathingElement>
           </div>
 
           {imagePreview && (
@@ -165,68 +179,85 @@ export default function ConsoleInput() {
       </div>
 
       {isAnalyzing && (
-        <div className="border-2 border-terminal-green p-6 bg-true-black">
-          <div className="text-terminal-green font-vt323 text-xl">
+        <div className="border-2 border-black p-6" style={{ backgroundColor: '#7C8A7C' }}>
+          <CyberEsotericText stability={0.85} className="font-mono text-lg" style={{ color: '#000' }}>
             &gt; ANALYZING... <span className="cursor-blink">_</span>
-          </div>
+          </CyberEsotericText>
         </div>
       )}
 
       {result && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="border-l-4 border-terminal-green bg-true-black p-6 space-y-4 font-vt323"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
-          <div className="text-terminal-green/60 text-lg mb-4">
-            &gt; ANALYSIS COMPLETE
-          </div>
+          <div className="border-2 border-black p-6 space-y-6" style={{ backgroundColor: '#7C8A7C' }}>
+            <GhostText size={16} className="font-mono mb-6" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+              &gt; ANALYSIS COMPLETE
+            </GhostText>
 
-          <div className="space-y-4">
-            <div className="border-l-2 border-terminal-green pl-4">
-              <div className="text-terminal-green/60 text-sm mb-1">ANALYSIS_LOG:</div>
-              <div className="text-terminal-green whitespace-pre-wrap text-xl leading-relaxed">
-                {result.analysis_log}
+            <div className="space-y-6">
+              <div className="border-l-2 border-black pl-4">
+                <GhostText size={12} className="text-xs font-mono mb-2" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+                  ANALYSIS_LOG:
+                </GhostText>
+                <GhostText size={18} className="font-mono whitespace-pre-wrap leading-relaxed" style={{ color: '#000' }}>
+                  {result.analysis_log}
+                </GhostText>
               </div>
-            </div>
 
-            {result.detected_symbols.length > 0 && (
-              <div>
-                <div className="text-terminal-green/60 text-sm mb-2">SYMBOLS:</div>
-                <div className="flex flex-wrap gap-2">
-                  {result.detected_symbols.map((symbol, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 border-2 border-terminal-green 
-                               bg-terminal-green/10 text-terminal-green text-base"
-                    >
-                      {symbol}
-                    </span>
-                  ))}
+              {result.detected_symbols.length > 0 && (
+                <div>
+                  <GhostText size={12} className="text-xs font-mono mb-3" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+                    SYMBOLS:
+                  </GhostText>
+                  <div className="flex flex-wrap gap-2">
+                    {result.detected_symbols.map((symbol, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 border-2 border-black font-mono text-sm inline-block"
+                        style={{
+                          backgroundColor: '#7C8A7C',
+                          color: '#000',
+                        }}
+                      >
+                        <GhostText size={14} style={{ color: '#000' }}>
+                          {symbol}
+                        </GhostText>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div>
-              <div className="text-terminal-green/60 text-sm mb-1">ARCHETYPE:</div>
-              <div className="text-terminal-amber text-2xl font-bold">
-                {result.dominant_archetype}
-              </div>
-            </div>
-
-            {result.visual_mood && (
               <div>
-                <div className="text-terminal-green/60 text-sm mb-1">VISUAL_MOOD:</div>
-                <div className="text-terminal-green/80 text-lg italic">
-                  {result.visual_mood}
-                </div>
+                <GhostText size={12} className="text-xs font-mono mb-2" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+                  ARCHETYPE:
+                </GhostText>
+                <GhostText size={30} className="font-mono text-3xl" style={{ color: '#000' }}>
+                  {result.dominant_archetype}
+                </GhostText>
               </div>
-            )}
 
-            <div className="border-l-2 border-error-red pl-4 mt-4">
-              <div className="text-error-red text-sm mb-1">REFLECTION_QUESTION:</div>
-              <div className="text-error-red text-xl font-bold">
-                {result.reflection_question}
+              {result.visual_mood && (
+                <div>
+                  <GhostText size={12} className="text-xs font-mono mb-2" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+                    VISUAL_MOOD:
+                  </GhostText>
+                  <GhostText size={16} className="italic" style={{ color: '#000' }}>
+                    {result.visual_mood}
+                  </GhostText>
+                </div>
+              )}
+
+              <div className="border-l-2 border-black pl-4 mt-6">
+                <GhostText size={12} className="text-xs font-mono mb-2" style={{ color: '#1a2b1a', letterSpacing: '1px' }}>
+                  REFLECTION_QUESTION:
+                </GhostText>
+                <GhostText size={20} className="font-mono text-xl" style={{ color: '#000' }}>
+                  {result.reflection_question}
+                </GhostText>
               </div>
             </div>
           </div>

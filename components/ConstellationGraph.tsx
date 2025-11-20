@@ -10,6 +10,8 @@ interface Node {
   occurrences: number
   x: number
   y: number
+  vx?: number // Velocity x (for force-directed)
+  vy?: number // Velocity y (for force-directed)
 }
 
 interface Edge {
@@ -30,9 +32,14 @@ export default function ConstellationGraph() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [minStrength, setMinStrength] = useState(1) // Filter weak connections
+  const [showLabels, setShowLabels] = useState(true) // Show all labels
+  const [categoryFilter, setCategoryFilter] = useState<Set<string | null>>(new Set(['NATURE', 'PERSONA', 'SHADOW', 'SACRED', null])) // All categories visible
+  const [iterations, setIterations] = useState(0) // Force-directed iterations
   const svgRef = useRef<SVGSVGElement>(null)
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
+  const animationFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
     fetchGraphData()
@@ -55,31 +62,59 @@ export default function ConstellationGraph() {
         return
       }
       
-      // Simple force-directed layout: distribute nodes in a circle initially
       const nodeCount = data.nodes.length || 0
       
       if (nodeCount === 0) {
         setGraphData({ nodes: [], edges: [] })
         return
       }
-      
-      const radius = Math.min(400, Math.max(200, nodeCount * 20))
+
+      // Initial fractal-like positioning using recursive subdivision
       const centerX = 400
       const centerY = 300
+      const initialRadius = 250
       
-      const positionedNodes = data.nodes.map((node: Node, index: number) => {
-        const angle = (2 * Math.PI * index) / nodeCount
-        return {
-          ...node,
-          x: centerX + radius * Math.cos(angle),
-          y: centerY + radius * Math.sin(angle),
-        }
+      // Group nodes by category
+      const categoryGroups: Record<string, Node[]> = {}
+      data.nodes.forEach((node: Node) => {
+        const cat = node.category || 'UNKNOWN'
+        if (!categoryGroups[cat]) categoryGroups[cat] = []
+        categoryGroups[cat].push(node)
+      })
+
+      // Fractal-like initial positions - recursive spiral placement
+      const positionedNodes: Node[] = []
+      let globalIndex = 0
+      
+      Object.entries(categoryGroups).forEach(([category, nodes]) => {
+        // Each category gets a sector of the circle
+        const categoryAngle = (Object.keys(categoryGroups).indexOf(category) / Object.keys(categoryGroups).length) * 2 * Math.PI
+        const categoryCenterX = centerX + Math.cos(categoryAngle) * 100
+        const categoryCenterY = centerY + Math.sin(categoryAngle) * 100
+        
+        // Spiral placement within category cluster
+        nodes.forEach((node, index) => {
+          const spiralAngle = (index / nodes.length) * 2 * Math.PI * 2 // Double spiral
+          const spiralRadius = (index / nodes.length) * 80
+          const noise = Math.random() * 20 - 10 // Add some organic randomness
+          
+          positionedNodes.push({
+            ...node,
+            x: categoryCenterX + (spiralRadius + noise) * Math.cos(spiralAngle),
+            y: categoryCenterY + (spiralRadius + noise) * Math.sin(spiralAngle),
+          })
+          globalIndex++
+        })
       })
       
       setGraphData({
         nodes: positionedNodes,
         edges: data.edges || [],
       })
+      
+      // Start force-directed simulation
+      setIterations(0)
+      runForceDirectedSimulation(positionedNodes, data.edges || [])
     } catch (error) {
       console.error('Error fetching graph data:', error)
       setGraphData({ nodes: [], edges: [] })
@@ -106,6 +141,146 @@ export default function ConstellationGraph() {
   const getNodeSize = (level: number): number => {
     return 8 + level * 4 // Level 1 = 12px, Level 5 = 28px
   }
+
+  // Force-directed layout simulation for organic clustering
+  const runForceDirectedSimulation = (initialNodes: Node[], edges: Edge[]) => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+    }
+
+    let nodes = initialNodes.map(n => ({ ...n, vx: 0, vy: 0 }))
+    const maxIterations = 100
+    let iteration = 0
+
+    const simulate = () => {
+      if (iteration >= maxIterations) {
+        const cleanNodes = nodes.map(({ vx, vy, ...rest }) => rest)
+        setGraphData({ nodes: cleanNodes, edges })
+        return
+      }
+
+      // Force parameters
+      const linkDistance = 100 // Preferred distance between connected nodes
+      const linkStrength = 0.3 // Strength of spring force
+      const chargeStrength = -800 // Repulsion strength
+      const categoryAttraction = 200 // Attraction between same category
+      const damping = 0.9 // Friction
+
+      // Reset velocities
+      nodes.forEach(node => {
+        node.vx = 0
+        node.vy = 0
+      })
+
+      // Apply spring forces (attraction) for edges
+      edges.forEach(edge => {
+        const source = nodes.find(n => n.id === edge.source)
+        const target = nodes.find(n => n.id === edge.target)
+        if (!source || !target) return
+
+        const dx = target.x - source.x
+        const dy = target.y - source.y
+        const distance = Math.sqrt(dx * dx + dy * dy) || 1
+        const force = (distance - linkDistance) * linkStrength * edge.strength
+
+        const fx = (dx / distance) * force
+        const fy = (dy / distance) * force
+
+        source.vx += fx
+        source.vy += fy
+        target.vx -= fx
+        target.vy -= fy
+      })
+
+      // Apply repulsion (charge) between all nodes
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const nodeA = nodes[i]
+          const nodeB = nodes[j]
+
+          const dx = nodeB.x - nodeA.x
+          const dy = nodeB.y - nodeA.y
+          const distance = Math.sqrt(dx * dx + dy * dy) || 1
+          const distanceSquared = distance * distance
+
+          // Repulsion force
+          const force = chargeStrength / distanceSquared
+          const fx = (dx / distance) * force
+          const fy = (dy / distance) * force
+
+          nodeA.vx -= fx
+          nodeA.vy -= fy
+          nodeB.vx += fx
+          nodeB.vy += fy
+
+          // Category attraction - nodes of same category attract slightly
+          if (nodeA.category === nodeB.category && nodeA.category) {
+            const attraction = categoryAttraction / distanceSquared
+            const ax = (dx / distance) * attraction
+            const ay = (dy / distance) * attraction
+
+            nodeA.vx += ax
+            nodeA.vy += ay
+            nodeB.vx -= ax
+            nodeB.vy -= ay
+          }
+        }
+      }
+
+      // Update positions
+      const centerX = 400
+      const centerY = 300
+      const centerForce = 0.01 // Weak force toward center
+
+      nodes.forEach(node => {
+        // Apply velocity with damping
+        node.vx *= damping
+        node.vy *= damping
+
+        // Weak centering force
+        const dx = centerX - node.x
+        const dy = centerY - node.y
+        node.vx += dx * centerForce
+        node.vy += dy * centerForce
+
+        // Update position
+        node.x += node.vx * 0.1
+        node.y += node.vy * 0.1
+
+        // Keep within bounds (soft boundary)
+        const maxDistance = 350
+        const distanceFromCenter = Math.sqrt(
+          (node.x - centerX) ** 2 + (node.y - centerY) ** 2
+        )
+        if (distanceFromCenter > maxDistance) {
+          const angle = Math.atan2(node.y - centerY, node.x - centerX)
+          node.x = centerX + Math.cos(angle) * maxDistance
+          node.y = centerY + Math.sin(angle) * maxDistance
+        }
+      })
+
+      iteration++
+      setIterations(iteration)
+
+      // Update graph data every few iterations for smooth animation
+      if (iteration % 5 === 0) {
+        const cleanNodes = nodes.map(({ vx, vy, ...rest }) => rest)
+        setGraphData({ nodes: cleanNodes, edges })
+      }
+
+      animationFrameRef.current = requestAnimationFrame(simulate)
+    }
+
+    simulate()
+  }
+
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+    }
+  }, [])
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
@@ -153,17 +328,76 @@ export default function ConstellationGraph() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-terminal-green/60 text-sm">
-          &gt; CONSTELLATION - {graphData.nodes.length} NODES, {graphData.edges.length} CONNECTIONS
+      <div className="space-y-3 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="text-terminal-green/60 text-sm">
+            &gt; CONSTELLATION - {graphData.nodes.length} NODES, {graphData.edges.filter(e => e.strength >= minStrength).length} CONNECTIONS
+          </div>
+          <div className="flex gap-2 text-xs text-terminal-green/60">
+            <button
+              onClick={() => setZoom(1)}
+              className="px-2 py-1 border border-terminal-green/30 hover:border-terminal-green/60"
+            >
+              RESET VIEW
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2 text-xs text-terminal-green/60">
-          <button
-            onClick={() => setZoom(1)}
-            className="px-2 py-1 border border-terminal-green/30 hover:border-terminal-green/60"
-          >
-            RESET VIEW
-          </button>
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-terminal-green/60">MIN STRENGTH:</span>
+            <input
+              type="range"
+              min="1"
+              max="5"
+              value={minStrength}
+              onChange={(e) => setMinStrength(Number(e.target.value))}
+              className="w-20"
+            />
+            <span className="text-terminal-green">{minStrength}</span>
+          </div>
+          
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showLabels}
+              onChange={(e) => setShowLabels(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <span className="text-terminal-green/60">SHOW LABELS</span>
+          </label>
+        </div>
+
+        {/* Category Filter */}
+        <div className="flex flex-wrap gap-2 text-xs">
+          <span className="text-terminal-green/60">CATEGORIES:</span>
+          {(['NATURE', 'PERSONA', 'SHADOW', 'SACRED', null] as const).map((cat) => {
+            const isVisible = categoryFilter.has(cat)
+            const color = cat ? getCategoryColor(cat) : '#888888'
+            return (
+              <button
+                key={cat || 'UNKNOWN'}
+                onClick={() => {
+                  const newFilter = new Set(categoryFilter)
+                  if (isVisible) {
+                    newFilter.delete(cat)
+                  } else {
+                    newFilter.add(cat)
+                  }
+                  setCategoryFilter(newFilter)
+                }}
+                className="px-2 py-1 border transition-colors"
+                style={{
+                  borderColor: isVisible ? color : color + '40',
+                  backgroundColor: isVisible ? color + '10' : 'transparent',
+                  color: isVisible ? color : color + '60',
+                }}
+              >
+                {cat || 'UNKNOWN'}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -185,67 +419,77 @@ export default function ConstellationGraph() {
           preserveAspectRatio="xMidYMid meet"
         >
           <g transform={`translate(${pan.x + 400}, ${pan.y + 300}) scale(${zoom}) translate(-400, -300)`}>
-            {/* Edges (lines) */}
+            {/* Edges (lines) - filtered by strength */}
             <g>
-              {graphData.edges.map((edge) => {
-                const sourceNode = graphData.nodes.find((n) => n.id === edge.source)
-                const targetNode = graphData.nodes.find((n) => n.id === edge.target)
-                
-                if (!sourceNode || !targetNode) return null
-                
-                const opacity = Math.min(1, 0.2 + edge.strength * 0.1)
-                
-                return (
-                  <line
-                    key={edge.id}
-                    x1={sourceNode.x}
-                    y1={sourceNode.y}
-                    x2={targetNode.x}
-                    y2={targetNode.y}
-                    stroke="#33FF00"
-                    strokeWidth={Math.max(1, Math.min(3, edge.strength * 0.5))}
-                    strokeOpacity={opacity}
-                  />
-                )
-              })}
+              {graphData.edges
+                .filter((edge) => edge.strength >= minStrength)
+                .map((edge) => {
+                  const sourceNode = graphData.nodes.find((n) => n.id === edge.source)
+                  const targetNode = graphData.nodes.find((n) => n.id === edge.target)
+                  
+                  if (!sourceNode || !targetNode) return null
+                  
+                  // Check if both nodes are visible
+                  if (!categoryFilter.has(sourceNode.category) || !categoryFilter.has(targetNode.category)) {
+                    return null
+                  }
+                  
+                  const opacity = Math.min(1, 0.3 + edge.strength * 0.15)
+                  
+                  return (
+                    <line
+                      key={edge.id}
+                      x1={sourceNode.x}
+                      y1={sourceNode.y}
+                      x2={targetNode.x}
+                      y2={targetNode.y}
+                      stroke="#33FF00"
+                      strokeWidth={Math.max(1, Math.min(4, edge.strength * 0.6))}
+                      strokeOpacity={opacity}
+                    />
+                  )
+                })}
             </g>
 
-            {/* Nodes (symbols) */}
+            {/* Nodes (symbols) - filtered by category */}
             <g>
-              {graphData.nodes.map((node) => {
-                const size = getNodeSize(node.level)
-                const color = getCategoryColor(node.category)
-                const isSelected = selectedNode === node.id
-                
-                return (
-                  <g key={node.id}>
-                    <rect
-                      x={node.x - size / 2}
-                      y={node.y - size / 2}
-                      width={size}
-                      height={size}
-                      fill={isSelected ? color : color + '80'}
-                      stroke={isSelected ? color : '#33FF00'}
-                      strokeWidth={isSelected ? 2 : 1}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedNode(isSelected ? null : node.id)}
-                    />
-                    {isSelected && (
-                      <text
-                        x={node.x}
-                        y={node.y - size - 5}
-                        textAnchor="middle"
-                        fill={color}
-                        fontSize="10"
-                        fontFamily="VT323, monospace"
-                        className="pointer-events-none"
-                      >
-                        {node.name} (L{node.level})
-                      </text>
-                    )}
-                  </g>
-                )
-              })}
+              {graphData.nodes
+                .filter((node) => categoryFilter.has(node.category))
+                .map((node) => {
+                  const size = getNodeSize(node.level)
+                  const color = getCategoryColor(node.category)
+                  const isSelected = selectedNode === node.id
+                  
+                  return (
+                    <g key={node.id}>
+                      <rect
+                        x={node.x - size / 2}
+                        y={node.y - size / 2}
+                        width={size}
+                        height={size}
+                        fill={isSelected ? color : color + '90'}
+                        stroke={isSelected ? color : '#33FF00'}
+                        strokeWidth={isSelected ? 3 : 1.5}
+                        className="cursor-pointer"
+                        onClick={() => setSelectedNode(isSelected ? null : node.id)}
+                      />
+                      {(showLabels || isSelected) && (
+                        <text
+                          x={node.x}
+                          y={node.y - size - 8}
+                          textAnchor="middle"
+                          fill={isSelected ? color : color + 'CC'}
+                          fontSize={isSelected ? "11" : "9"}
+                          fontFamily="VT323, monospace"
+                          className="pointer-events-none"
+                          style={{ fontWeight: isSelected ? 'bold' : 'normal' }}
+                        >
+                          {node.name}
+                        </text>
+                      )}
+                    </g>
+                  )
+                })}
             </g>
           </g>
         </svg>

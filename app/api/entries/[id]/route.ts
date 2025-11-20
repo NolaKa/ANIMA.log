@@ -64,6 +64,9 @@ export async function DELETE(
             },
           })
         }
+      } else {
+        // Log warning if symbol not found - this shouldn't happen normally
+        console.warn(`Symbol "${normalizedName}" (from "${symbolName}") not found in database when deleting entry ${id}`)
       }
     }
 

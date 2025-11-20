@@ -24,6 +24,7 @@ export default function Archive() {
   const [entries, setEntries] = useState<Entry[]>([])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchEntries()
@@ -43,6 +44,45 @@ export default function Archive() {
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id)
+  }
+
+  const handleDeleteClick = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent expanding/collapsing when clicking delete
+    setDeleteConfirmId(id)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmId) return
+
+    try {
+      const response = await fetch(`/api/entries/${deleteConfirmId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete entry')
+      }
+
+      // Remove entry from local state
+      setEntries(entries.filter(entry => entry.id !== deleteConfirmId))
+      
+      // Close expanded view if this entry was expanded
+      if (expandedId === deleteConfirmId) {
+        setExpandedId(null)
+      }
+
+      // Close confirmation modal
+      setDeleteConfirmId(null)
+    } catch (error) {
+      console.error('Error deleting entry:', error)
+      setDeleteConfirmId(null)
+      // You can add a custom error message here if needed
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmId(null)
   }
 
   if (loading) {
@@ -150,10 +190,61 @@ export default function Archive() {
                     {entry.reflectionQuestion}
                   </div>
                 </div>
+                <div className="pt-2 border-t border-terminal-green/20">
+                  <button
+                    onClick={(e) => handleDeleteClick(entry.id, e)}
+                    className="px-4 py-2 border-2 border-error-red/50 
+                             text-error-red/80 hover:border-error-red 
+                             hover:text-error-red hover:bg-error-red/10
+                             font-vt323 text-sm transition-colors
+                             active:bg-error-red/20"
+                  >
+                    [DELETE ENTRY]
+                  </button>
+                </div>
               </div>
             )}
           </div>
         ))
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div 
+          className="fixed inset-0 bg-true-black/80 flex items-center justify-center z-50"
+          onClick={handleDeleteCancel}
+        >
+          <div 
+            className="border-4 border-error-red p-6 bg-true-black max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-error-red font-vt323 text-xl mb-4">
+              &gt; DELETE CONFIRMATION
+            </div>
+            <div className="text-terminal-green/80 font-mono text-sm mb-6">
+              Are you sure you want to delete this entry?<br/>
+              This operation cannot be undone.
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={handleDeleteConfirm}
+                className="flex-1 px-4 py-3 border-2 border-error-red 
+                         bg-error-red/20 text-error-red hover:bg-error-red/30
+                         font-vt323 text-lg transition-colors"
+              >
+                [CONFIRM DELETE]
+              </button>
+              <button
+                onClick={handleDeleteCancel}
+                className="flex-1 px-4 py-3 border-2 border-terminal-green/50 
+                         bg-terminal-green/10 text-terminal-green hover:bg-terminal-green/20
+                         font-vt323 text-lg transition-colors"
+              >
+                [CANCEL]
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

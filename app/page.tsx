@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react'
 import ConsoleInput from '@/components/ConsoleInput'
 import Archive from '@/components/Archive'
-import SymbolDex from '@/components/SymbolDex'
+import SymbolLib from '@/components/SymbolLib'
 import ConstellationGraph from '@/components/ConstellationGraph'
 import BootingSequence from '@/components/BootingSequence'
 import ConstellationAlert from '@/components/ConstellationAlert'
 
 export default function Home() {
   const [isBooting, setIsBooting] = useState(true)
-  const [currentView, setCurrentView] = useState<'console' | 'archive' | 'symbols' | 'constellation'>('console')
+  const [currentView, setCurrentView] = useState<'console' | 'archive' | 'symbollib' | 'constellation'>('console')
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,14 +57,14 @@ export default function Home() {
               [ARCHIVE]
             </button>
             <button
-              onClick={() => setCurrentView('symbols')}
+              onClick={() => setCurrentView('symbollib')}
               className={`px-3 py-1 border-2 transition-colors ${
-                currentView === 'symbols' 
+                currentView === 'symbollib' 
                   ? 'border-terminal-green bg-terminal-green/10 text-terminal-green' 
                   : 'border-terminal-green/30 text-terminal-green/60 hover:border-terminal-green/50'
               }`}
             >
-              [SYMBOL_DEX]
+              [SYMBOL.LIB]
             </button>
             <button
               onClick={() => setCurrentView('constellation')}
@@ -84,7 +84,7 @@ export default function Home() {
       <div className="max-w-6xl mx-auto p-4">
         {currentView === 'console' && <ConsoleInput />}
         {currentView === 'archive' && <Archive />}
-        {currentView === 'symbols' && <SymbolDex />}
+        {currentView === 'symbollib' && <SymbolLib />}
         {currentView === 'constellation' && <ConstellationGraph />}
       </div>
 

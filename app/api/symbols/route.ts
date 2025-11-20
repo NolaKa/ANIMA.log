@@ -15,8 +15,12 @@ export async function GET() {
       name: symbol.name,
       description: symbol.description,
       archetype: symbol.archetype,
+      category: symbol.category,
+      meaning: symbol.meaning,
+      level: symbol.level,
       occurrences: symbol.occurrences,
       firstSeen: symbol.firstSeen.toISOString(),
+      lastSeen: symbol.lastSeen.toISOString(),
     }))
 
     return NextResponse.json(formattedSymbols)

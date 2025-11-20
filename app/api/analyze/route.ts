@@ -96,10 +96,46 @@ export async function POST(request: NextRequest) {
 
       // Calculate and update level
       const newLevel = calculateLevel(updatedSymbol.occurrences)
+      const levelIncreased = newLevel > updatedSymbol.level
+      
       if (updatedSymbol.level !== newLevel) {
+        // If level increased and description is missing or too short, generate deeper description
+        let descriptionToSet = updatedSymbol.description
+        
+        if (levelIncreased && (!updatedSymbol.description || updatedSymbol.description.length < 50)) {
+          // Generate deeper description based on level
+          const descriptionDepth = newLevel === 1 ? 'krótki (1-2 zdania)' :
+                                   newLevel === 2 ? 'krótszy (2-3 zdania)' :
+                                   newLevel === 3 ? 'średni (3-4 zdania)' :
+                                   newLevel === 4 ? 'głębszy (4-5 zdań)' :
+                                   'bardzo głęboki (5-7 zdań)'
+          
+          // Use AI analysis log or generate description from symbol details
+          if (details.meaning) {
+            descriptionToSet = `${details.meaning}. `
+          }
+          
+          // Add level-appropriate depth
+          if (newLevel >= 3) {
+            descriptionToSet += `Symbol pojawia się ${updatedSymbol.occurrences} razy w snach i wizjach. `
+            if (updatedSymbol.category) {
+              descriptionToSet += `Kategoria: ${updatedSymbol.category}. `
+            }
+            if (newLevel >= 4) {
+              descriptionToSet += `Głębsza analiza wskazuje na znaczącą rolę w nieświadomości użytkownika. `
+            }
+            if (newLevel === 5) {
+              descriptionToSet += `Symbol osiągnął pełną krystalizację - jest kluczowym elementem w mapie psyche.`
+            }
+          }
+        }
+        
         await prisma.symbol.update({
           where: { id: updatedSymbol.id },
-          data: { level: newLevel },
+          data: { 
+            level: newLevel,
+            description: descriptionToSet || updatedSymbol.description,
+          },
         })
       }
 

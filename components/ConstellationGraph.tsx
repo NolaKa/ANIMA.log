@@ -30,7 +30,6 @@ export default function ConstellationGraph() {
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: [] })
   const [loading, setLoading] = useState(true)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
-  const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [minStrength, setMinStrength] = useState(1) // Filter weak connections
   const [showLabels, setShowLabels] = useState(true) // Show all labels
@@ -302,11 +301,7 @@ export default function ConstellationGraph() {
     isDragging.current = false
   }
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault()
-    const delta = e.deltaY > 0 ? 0.9 : 1.1
-    setZoom((prev) => Math.max(0.5, Math.min(2, prev * delta)))
-  }
+  // Zoom disabled - bitmap style doesn't need zoom
 
   if (loading) {
     return (
@@ -332,14 +327,6 @@ export default function ConstellationGraph() {
         <div className="flex items-center justify-between">
           <div className="text-terminal-green/60 text-sm">
             &gt; CONSTELLATION - {graphData.nodes.length} NODES, {graphData.edges.filter(e => e.strength >= minStrength).length} CONNECTIONS
-          </div>
-          <div className="flex gap-2 text-xs text-terminal-green/60">
-            <button
-              onClick={() => setZoom(1)}
-              className="px-2 py-1 border border-terminal-green/30 hover:border-terminal-green/60"
-            >
-              RESET VIEW
-            </button>
           </div>
         </div>
 
@@ -402,13 +389,12 @@ export default function ConstellationGraph() {
       </div>
 
       <div
-        className="border-2 border-terminal-green/30 bg-true-black overflow-hidden"
+        className="bg-true-black overflow-hidden"
         style={{ height: '600px', cursor: isDragging.current ? 'grabbing' : 'grab' }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
       >
         <svg
           ref={svgRef}
@@ -417,9 +403,10 @@ export default function ConstellationGraph() {
           className="select-none"
           viewBox="0 0 800 600"
           preserveAspectRatio="xMidYMid meet"
+          style={{ imageRendering: 'pixelated' }} // Bitmap style
         >
-          <g transform={`translate(${pan.x + 400}, ${pan.y + 300}) scale(${zoom}) translate(-400, -300)`}>
-            {/* Edges (lines) - filtered by strength */}
+          <g transform={`translate(${pan.x + 400}, ${pan.y + 300}) translate(-400, -300)`}>
+            {/* Edges (lines) - filtered by strength - bitmap style */}
             <g>
               {graphData.edges
                 .filter((edge) => edge.strength >= minStrength)
@@ -434,7 +421,8 @@ export default function ConstellationGraph() {
                     return null
                   }
                   
-                  const opacity = Math.min(1, 0.3 + edge.strength * 0.15)
+                  // Bitmap style: solid colors, pixelated
+                  const strokeWidth = edge.strength === 1 ? 1 : edge.strength === 2 ? 2 : edge.strength >= 3 ? 3 : 1
                   
                   return (
                     <line
@@ -444,45 +432,57 @@ export default function ConstellationGraph() {
                       x2={targetNode.x}
                       y2={targetNode.y}
                       stroke="#33FF00"
-                      strokeWidth={Math.max(1, Math.min(4, edge.strength * 0.6))}
-                      strokeOpacity={opacity}
+                      strokeWidth={strokeWidth}
+                      strokeOpacity={edge.strength >= 3 ? 1 : edge.strength === 2 ? 0.7 : 0.5}
+                      shapeRendering="crispEdges"
                     />
                   )
                 })}
             </g>
 
-            {/* Nodes (symbols) - filtered by category */}
+            {/* Nodes (symbols) - filtered by category - bitmap/pixelated style */}
             <g>
               {graphData.nodes
                 .filter((node) => categoryFilter.has(node.category))
                 .map((node) => {
-                  const size = getNodeSize(node.level)
+                  // Bitmap style: fixed pixel sizes (8x8, 10x10, 12x12, 14x14, 16x16)
+                  const size = node.level === 1 ? 8 : node.level === 2 ? 10 : node.level === 3 ? 12 : node.level === 4 ? 14 : 16
                   const color = getCategoryColor(node.category)
                   const isSelected = selectedNode === node.id
                   
+                  // Round to pixel grid for crisp bitmap look
+                  const pixelX = Math.round(node.x - size / 2)
+                  const pixelY = Math.round(node.y - size / 2)
+                  
                   return (
                     <g key={node.id}>
+                      {/* Main square - solid bitmap style, no anti-aliasing */}
                       <rect
-                        x={node.x - size / 2}
-                        y={node.y - size / 2}
+                        x={pixelX}
+                        y={pixelY}
                         width={size}
                         height={size}
-                        fill={isSelected ? color : color + '90'}
-                        stroke={isSelected ? color : '#33FF00'}
-                        strokeWidth={isSelected ? 3 : 1.5}
+                        fill={isSelected ? color : color}
+                        stroke={isSelected ? '#33FF00' : '#33FF00'}
+                        strokeWidth={isSelected ? 2 : 1}
                         className="cursor-pointer"
                         onClick={() => setSelectedNode(isSelected ? null : node.id)}
+                        shapeRendering="crispEdges"
                       />
+                      
                       {(showLabels || isSelected) && (
                         <text
                           x={node.x}
-                          y={node.y - size - 8}
+                          y={pixelY - 4}
                           textAnchor="middle"
-                          fill={isSelected ? color : color + 'CC'}
-                          fontSize={isSelected ? "11" : "9"}
+                          fill={isSelected ? color : color}
+                          fontSize={isSelected ? "10" : "8"}
                           fontFamily="VT323, monospace"
                           className="pointer-events-none"
-                          style={{ fontWeight: isSelected ? 'bold' : 'normal' }}
+                          style={{ 
+                            fontWeight: isSelected ? 'bold' : 'normal',
+                            textShadow: '1px 1px 0px #000',
+                          }}
                         >
                           {node.name}
                         </text>
@@ -543,7 +543,7 @@ export default function ConstellationGraph() {
       )}
 
       <div className="text-terminal-green/40 text-xs font-mono">
-        &gt; CONTROLS: DRAG TO PAN | SCROLL TO ZOOM | CLICK NODE TO SELECT
+        &gt; CONTROLS: DRAG TO PAN | CLICK NODE TO SELECT
       </div>
     </div>
   )

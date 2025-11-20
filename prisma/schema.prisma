@@ -11,19 +11,19 @@ datasource db {
 }
 
 model Entry {
-  id                String   @id @default(cuid())
-  timestamp         DateTime @default(now())
-  type              String   // "text" | "image"
-  contentText       String?  // raw text (for text entries)
-  imageUrl          String?  // image URL/path (for image entries)
-  detectedSymbols   String   // JSON array of symbols
-  dominantArchetype String?  // e.g. "Cień", "Anima", "Animus" (archetype_tag)
-  visualMood        String?  // visual mood description
-  aiAnalysis        String   // Full AI analysis JSON (ai_analysis)
-  analysisLog       String   // Short analysis log for display
-  reflectionQuestion String  // Reflection question
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  timestamp          DateTime @default(now())
+  type               String // "text" | "image"
+  contentText        String? // raw text (for text entries)
+  imageUrl           String? // image URL/path (for image entries)
+  detectedSymbols    String // JSON array of symbols
+  dominantArchetype  String? // e.g. "Cień", "Anima", "Animus" (archetype_tag)
+  visualMood         String? // visual mood description
+  aiAnalysis         String // Full AI analysis JSON (ai_analysis)
+  analysisLog        String // Short analysis log for display
+  reflectionQuestion String // Reflection question
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@index([timestamp])
   @@index([dominantArchetype])
@@ -34,16 +34,44 @@ model Symbol {
   name        String   @unique
   description String?
   archetype   String?
+  category    String? // NATURE, PERSONA, SHADOW, SACRED
+  meaning     String? // Short meaning from AI
+  level       Int      @default(1) // Evolution level (1-5)
   firstSeen   DateTime @default(now())
+  lastSeen    DateTime @default(now())
   occurrences Int      @default(1)
+
+  // Connections to other symbols
+  connections SymbolConnection[] @relation("FromSymbol")
+  connectedTo SymbolConnection[] @relation("ToSymbol")
+
+  @@index([category])
+  @@index([level])
+  @@index([lastSeen])
+}
+
+model SymbolConnection {
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  strength  Int      @default(1) // How many times they appeared together
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+
+  fromSymbol Symbol @relation("FromSymbol", fields: [fromId], references: [id], onDelete: Cascade)
+  toSymbol   Symbol @relation("ToSymbol", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@index([fromId])
+  @@index([toId])
+  @@index([strength])
 }
 
 model Constellation {
   id          String   @id @default(cuid())
-  pattern     String   // e.g. "ZANURZENIE"
+  pattern     String // e.g. "ZANURZENIE"
   description String
-  symbols     String   // JSON array of related symbols
+  symbols     String // JSON array of related symbols
   detectedAt  DateTime @default(now())
-  confidence  Float    // 0.0 to 1.0
+  confidence  Float // 0.0 to 1.0
 }
-

@@ -37,6 +37,12 @@ INSTRUKCJA ANALIZY (ALCHEMIA):
    - Przykłady POPRAWNE: "kot", "woda", "drzewo", "kobieta", "mężczyzna", "słońce", "księżyc"
    - Przykłady BŁĘDNE: "kota", "koty", "kotem", "wodę", "wody", "drzewa", "kobietą"
 
+2a. KATEGORYZACJA SYMBOLI: Dla każdego wykrytego symbolu przypisz kategorię Jungowską:
+   - NATURE: Zwierzęta, rośliny, żywioły (np. "wilk", "drzewo", "woda", "ogień")
+   - PERSONA: Ubrania, maski, role społeczne, budynki (np. "garnitur", "maska", "wieża")
+   - SHADOW: Potwory, broń, krew, piwnice, ciemność (np. "potwór", "nóż", "krew")
+   - SACRED: Figury geometryczne, światło, bóstwa, mandale (np. "koło", "światło", "krzyż")
+
 3. Wykonaj AMPLIFIKACJĘ: Nie podawaj definicji słownikowej. Połącz symbol z mitem, baśnią lub alchemią, ale zrób to krótko i enigmatycznie.
 
 4. Znajdź TENSION (Napięcie): Gdzie jest konflikt? Cień vs Persona? Męskie vs Żeńskie?
@@ -77,10 +83,20 @@ FORMAT WYJŚCIOWY (BEZWZGLĘDNIE TYLKO JSON - ŻADNEGO TEKSTU PRZED ANI PO):
 {
   "analysis_log": "Tekst analizy. Maks 3 zdania. Styl: Cyber-Noir. Surowy, ucięty. Zakończ różnorodnie - czasem neutralnie, czasem pozytywnie, czasem negatywnie. NIE używaj zawsze tego samego zakończenia. Przykłady: 'Wykryto obiekt: Wilk. Symbolika instynktu nadpisanego przez cywilizację. Ego próbuje nałożyć kaganiec na naturę.' LUB 'Wykryto obiekt: Woda. Pamięć ROM wskazuje na głębokie zanurzenie. Transmutacja danych w toku.' LUB 'Wykryto obiekt: Ogień. Sygnał wejściowy wskazuje na transformację. Aktualizacja firmware\'u duszy zakończona sukcesem.'",
   "detected_symbols": ["symbol1", "symbol2", "symbol3"], // WAŻNE: Tylko mianownik liczby pojedynczej, z polskimi znakami! Np: ["kot", "woda", "drzewo"], NIE ["kota", "wodę", "drzewa"]
+  "symbol_details": [
+    {"name": "symbol1", "category": "NATURE|PERSONA|SHADOW|SACRED", "meaning": "Krótkie znaczenie (1-2 słowa)"},
+    {"name": "symbol2", "category": "NATURE|PERSONA|SHADOW|SACRED", "meaning": "Krótkie znaczenie (1-2 słowa)"}
+  ], // Dla każdego symbolu: kategoria Jungowska i krótkie znaczenie
   "dominant_archetype": "JEDEN z dozwolonych archetypów (np. CIEŃ, JAŹŃ, HEROS, MĘDRZEC) - TYLKO z listy powyżej",
   "reflection_question": "Jedno, precyzyjne pytanie, które uderza w punkt. Ma zaboleć lub olśnić.",
   "visual_mood": "Krótki, artystyczny opis estetyki dla generatora grafiki. Np: 'Rozpikselowany las we mgle, zgniła zieleń, szum statyczny, VHS glitch'."
 }`
+
+export interface SymbolDetail {
+  name: string
+  category: 'NATURE' | 'PERSONA' | 'SHADOW' | 'SACRED'
+  meaning: string
+}
 
 export async function analyzeContent(
   type: 'text' | 'image',
@@ -88,6 +104,7 @@ export async function analyzeContent(
 ): Promise<{
   analysis_log: string
   detected_symbols: string[]
+  symbol_details?: SymbolDetail[]
   dominant_archetype: string
   reflection_question: string
   visual_mood: string
@@ -153,6 +170,7 @@ export async function analyzeContent(
     return {
       analysis_log: parsed.analysis_log || parsed.interpretation || text,
       detected_symbols: parsed.detected_symbols || parsed.detectedSymbols || [],
+      symbol_details: parsed.symbol_details || [],
       dominant_archetype: parsed.dominant_archetype || parsed.dominantArchetype || 'Nieznany',
       reflection_question: parsed.reflection_question || parsed.question || 'Co to dla Ciebie oznacza?',
       visual_mood: parsed.visual_mood || 'Nieznany',

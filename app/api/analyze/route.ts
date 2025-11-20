@@ -46,22 +46,98 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Helper function to calculate level based on occurrences
+    const calculateLevel = (occurrences: number): number => {
+      if (occurrences <= 2) return 1
+      if (occurrences <= 5) return 2
+      if (occurrences <= 10) return 3
+      if (occurrences <= 20) return 4
+      return 5
+    }
+
+    // Create a map of symbol details for quick lookup
+    const symbolDetailsMap = new Map<string, { category?: string; meaning?: string }>()
+    if (analysis.symbol_details) {
+      for (const detail of analysis.symbol_details) {
+        const normalizedName = normalizeSymbol(detail.name)
+        symbolDetailsMap.set(normalizedName, {
+          category: detail.category,
+          meaning: detail.meaning,
+        })
+      }
+    }
+
     // Update or create symbols (using normalized names)
+    const symbolIds: string[] = []
     for (const symbolName of normalizedSymbols) {
       const normalizedName = normalizeSymbol(symbolName)
-      await prisma.symbol.upsert({
+      const details = symbolDetailsMap.get(normalizedName) || {}
+      
+      const updatedSymbol = await prisma.symbol.upsert({
         where: { name: normalizedName },
         update: {
           occurrences: {
             increment: 1,
           },
+          lastSeen: new Date(),
+          // Update category and meaning if provided and not already set
+          category: details.category || undefined,
+          meaning: details.meaning || undefined,
         },
         create: {
           name: normalizedName,
           archetype: normalizedArchetype,
           occurrences: 1,
+          category: details.category || null,
+          meaning: details.meaning || null,
+          lastSeen: new Date(),
         },
       })
+
+      // Calculate and update level
+      const newLevel = calculateLevel(updatedSymbol.occurrences)
+      if (updatedSymbol.level !== newLevel) {
+        await prisma.symbol.update({
+          where: { id: updatedSymbol.id },
+          data: { level: newLevel },
+        })
+      }
+
+      symbolIds.push(updatedSymbol.id)
+    }
+
+    // Create connections between symbols that appeared together in this entry
+    // Only create connections if there are at least 2 symbols
+    if (symbolIds.length >= 2) {
+      for (let i = 0; i < symbolIds.length; i++) {
+        for (let j = i + 1; j < symbolIds.length; j++) {
+          const fromId = symbolIds[i]
+          const toId = symbolIds[j]
+
+          // Create or update connection (one direction, graph visualization handles bidirectional)
+          await prisma.symbolConnection.upsert({
+            where: {
+              fromId_toId: {
+                fromId,
+                toId,
+              },
+            },
+            update: {
+              strength: {
+                increment: 1,
+              },
+              lastSeen: new Date(),
+            },
+            create: {
+              fromId,
+              toId,
+              strength: 1,
+              firstSeen: new Date(),
+              lastSeen: new Date(),
+            },
+          })
+        }
+      }
     }
 
     // Return analysis with normalized archetype

@@ -15,6 +15,7 @@ export default function SymbolDex() {
   const [symbols, setSymbols] = useState<Symbol[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [cleaning, setCleaning] = useState(false)
 
   useEffect(() => {
     fetchSymbols()
@@ -29,6 +30,32 @@ export default function SymbolDex() {
       console.error('Error fetching symbols:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const cleanupOrphanedSymbols = async () => {
+    if (!confirm('Czy na pewno chcesz usunąć wszystkie symbole bez powiązanych wpisów?')) {
+      return
+    }
+
+    setCleaning(true)
+    try {
+      const response = await fetch('/api/symbols', {
+        method: 'DELETE',
+      })
+      const data = await response.json()
+      
+      if (response.ok) {
+        alert(`Usunięto ${data.deletedCount} symboli bez wpisów.`)
+        fetchSymbols() // Refresh the list
+      } else {
+        alert('Błąd podczas czyszczenia symboli.')
+      }
+    } catch (error) {
+      console.error('Error cleaning up symbols:', error)
+      alert('Błąd podczas czyszczenia symboli.')
+    } finally {
+      setCleaning(false)
     }
   }
 
@@ -48,8 +75,20 @@ export default function SymbolDex() {
 
   return (
     <div className="space-y-4">
-      <div className="mb-4 text-terminal-green/60 text-sm">
-        &gt; SYMBOL DEX - {symbols.length} SYMBOLS CATALOGUED
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-terminal-green/60 text-sm">
+          &gt; SYMBOL DEX - {symbols.length} SYMBOLS CATALOGUED
+        </div>
+        <button
+          onClick={cleanupOrphanedSymbols}
+          disabled={cleaning}
+          className="px-3 py-1 border border-terminal-green/30 
+                   hover:border-terminal-green/60 text-terminal-green/60 
+                   hover:text-terminal-green text-xs font-vt323
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {cleaning ? 'CLEANING...' : '[ CLEANUP ORPHANED ]'}
+        </button>
       </div>
 
       {symbols.length === 0 ? (

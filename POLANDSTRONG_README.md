@@ -20,30 +20,59 @@ Wszystkie próby zakończyły się błędem: "No Inference Provider available fo
 
 Aby użyć modelu Bielik, istnieją następujące opcje:
 
-#### 1. Własny hosting lokalny
+#### 1. Własny hosting lokalny (DARMOWE)
 - Pobranie modelu Bielika (np. w formacie GGUF lub Safetensors)
 - Uruchomienie lokalnie na serwerze używając biblioteki `transformers` od Hugging Face
+- **Brak opłat** - tylko koszt własnego sprzętu/prądu
 - Wymaga dużo zasobów (11B parametrów = ~22GB+ pamięci RAM/VRAM)
-- Można użyć formatu GGUF z quantyzacją dla mniejszych wymagań
+- Można użyć formatu GGUF z quantyzacją dla mniejszych wymagań (np. Q4 = ~6-7GB)
 
 #### 2. Usługi hostingowe w chmurze
-- **Hugging Face Inference Endpoints** - płatna usługa do hostowania modeli
-- **AWS SageMaker** - platforma do wdrażania modeli ML
-- **Google AI Platform** - usługa do wdrażania modeli AI
-- **Ollama** - lokalne hostowanie z prostym API (jeśli model jest dostępny)
 
-#### 3. Biblioteka Transformers (Python)
+**Płatne (z możliwymi darmowymi warstwami):**
+- **Hugging Face Inference Endpoints** - płatna usługa (opłaty za zasoby obliczeniowe)
+- **AWS SageMaker** - płatna platforma (może mieć darmową warstwę dla nowych użytkowników, ale ograniczoną)
+- **Google AI Platform** - płatna usługa (może mieć darmowe kredyty dla nowych użytkowników)
+- **Azure OpenAI** - płatna (opłaty za tokeny)
+
+**Darmowe opcje:**
+- **Ollama** - **CAŁKOWICIE DARMOWE** - lokalne hostowanie z prostym API (wymaga własnego komputera/serwera)
+  - Można hostować lokalnie na własnym sprzęcie
+  - Brak opłat za API
+  - Wymaga zasobów lokalnych (RAM/VRAM)
+  - Model Bielik musi być dostępny w formacie obsługiwanym przez Ollama
+
+#### 3. Biblioteka Transformers (Python) - DARMOWE
 - Użycie biblioteki `transformers` do łatwego generowania tekstu
 - Wymaga osobnego serwera Python z modelem
 - Komunikacja przez HTTP API między Next.js a serwerem Python
+- **Brak opłat** - tylko koszt własnego serwera/sprzętu
 
-#### 4. Kontenery Docker
+#### 4. Kontenery Docker - DARMOWE (jeśli hostowane lokalnie)
 - Spakowanie modelu i skryptu generującego tekst w kontenerze Docker
 - Uruchomienie w aplikacji jako osobny serwis
+- **Brak opłat** jeśli hostowane lokalnie
+- Płatne jeśli hostowane w chmurze (AWS ECS, Google Cloud Run, Azure Container Instances)
+
+### Podsumowanie kosztów
+
+**DARMOWE opcje:**
+- ✅ Własny hosting lokalny (wymaga własnego sprzętu)
+- ✅ Ollama (lokalne hostowanie)
+- ✅ Biblioteka Transformers (Python na własnym serwerze)
+- ✅ Docker (jeśli hostowane lokalnie)
+- ✅ **Groq API** (obecne rozwiązanie - darmowe, szybkie, działa dobrze)
+
+**PŁATNE opcje:**
+- 💰 Hugging Face Inference Endpoints
+- 💰 AWS SageMaker
+- 💰 Google AI Platform
+- 💰 Azure OpenAI
+- 💰 Docker w chmurze (AWS ECS, Google Cloud Run, Azure)
 
 ### Obecne rozwiązanie
 
-Aplikacja używa **Groq API** z polskim promptem, co działa dobrze i jest darmowe. Model Llama 3.1 8B Instant dobrze radzi sobie z polskim tekstem przy odpowiednim promptowaniu.
+Aplikacja używa **Groq API** z polskim promptem, co działa dobrze i jest **całkowicie darmowe**. Model Llama 3.1 8B Instant dobrze radzi sobie z polskim tekstem przy odpowiednim promptowaniu.
 
 ### Przyszłość
 

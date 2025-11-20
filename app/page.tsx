@@ -47,16 +47,6 @@ export default function Home() {
               [CONSOLE]
             </button>
             <button
-              onClick={() => setCurrentView('archive')}
-              className={`px-3 py-1 border-2 transition-colors ${
-                currentView === 'archive' 
-                  ? 'border-terminal-green bg-terminal-green/10 text-terminal-green' 
-                  : 'border-terminal-green/30 text-terminal-green/60 hover:border-terminal-green/50'
-              }`}
-            >
-              [ARCHIVE]
-            </button>
-            <button
               onClick={() => setCurrentView('symbollib')}
               className={`px-3 py-1 border-2 transition-colors ${
                 currentView === 'symbollib' 
@@ -75,6 +65,16 @@ export default function Home() {
               }`}
             >
               [CONSTELLATION]
+            </button>
+            <button
+              onClick={() => setCurrentView('archive')}
+              className={`px-3 py-1 border-2 transition-colors ${
+                currentView === 'archive' 
+                  ? 'border-terminal-green bg-terminal-green/10 text-terminal-green' 
+                  : 'border-terminal-green/30 text-terminal-green/60 hover:border-terminal-green/50'
+              }`}
+            >
+              [ARCHIVE]
             </button>
           </nav>
         </div>
